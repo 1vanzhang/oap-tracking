@@ -16,8 +16,9 @@ export default function DashboardAction({ action, href }: Props) {
         display: "grid",
         placeItems: "center",
         backgroundColor: "white",
-        width: "200px",
-        height: "200px",
+        width: "150px",
+        maxWidth: "40vw",
+        aspectRatio: "1/1",
         borderRadius: "5px",
       }}
     >
