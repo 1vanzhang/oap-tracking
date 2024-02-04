@@ -16,7 +16,7 @@ export const getStaticProps: GetStaticProps = async () => {
   console.log(latestCapacityReport);
   return {
     props: { latestCapacityReport },
-    revalidate: 10,
+    revalidate: 5,
   };
 };
 

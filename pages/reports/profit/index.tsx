@@ -35,7 +35,7 @@ export const getStaticProps: GetStaticProps = async () => {
   console.log("products", products);
   return {
     props: { products },
-    revalidate: 100,
+    revalidate: 5,
   };
 };
 

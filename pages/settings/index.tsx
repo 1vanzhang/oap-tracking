@@ -42,7 +42,7 @@ export const getStaticProps: GetStaticProps = async () => {
   console.log("items", items);
   return {
     props: { events, suppliers, items, authorizedUsers, products },
-    revalidate: 100,
+    revalidate: 5,
   };
 };
 

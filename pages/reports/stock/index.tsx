@@ -31,7 +31,7 @@ export const getStaticProps: GetStaticProps = async () => {
   });
   return {
     props: { items, stockHistory },
-    revalidate: 100,
+    revalidate: 5,
   };
 };
 
