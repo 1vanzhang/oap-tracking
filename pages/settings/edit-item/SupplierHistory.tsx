@@ -18,11 +18,13 @@ export default function SupplierHistory({
   itemId,
 }: Props) {
   const [selectedSupplier, setSelectedSupplier] =
-    React.useState<Supplier | null>(supplierOptions[0] || null);
+    React.useState<Supplier | null>(
+      supplierOptions?.length > 0 ? supplierOptions[0] : null
+    );
   const [date, setDate] = React.useState<string>(moment().format("YYYY-MM-DD"));
   const [pricePerUnit, setPricePerUnit] = React.useState<number | "">("");
   const [selectedUnit, setSelectedUnit] = React.useState<ItemUnit | null>(
-    units[0] || null
+    units?.length > 0 ? units[0] : null
   );
 
   const addSupplier = async () => {
@@ -56,7 +58,7 @@ export default function SupplierHistory({
           setSelectedSupplier(selected || null);
         }}
       >
-        {supplierOptions.map((supplier) => {
+        {supplierOptions?.map((supplier) => {
           return <option key={supplier.name}>{supplier.name}</option>;
         })}
       </select>
@@ -82,7 +84,7 @@ export default function SupplierHistory({
           setSelectedUnit(selected || null);
         }}
       >
-        {units.map((unit) => {
+        {units?.map((unit) => {
           return <option key={unit.id}>{unit.name}</option>;
         })}
       </select>
@@ -104,7 +106,7 @@ export default function SupplierHistory({
           </tr>
         </thead>
         <tbody>
-          {suppliers.map((supplier) => (
+          {suppliers?.map((supplier) => (
             <tr key={supplier.id}>
               <td>{supplier.supplierName}</td>
               <td>

@@ -1,5 +1,5 @@
 import { NextApiHandler } from "next";
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "../../../lib/prisma";
@@ -7,7 +7,7 @@ import prisma from "../../../lib/prisma";
 const authHandler: NextApiHandler = (req, res) => NextAuth(req, res, options);
 export default authHandler;
 
-const options = {
+const options: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -17,7 +17,7 @@ const options = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.SECRET,
   callbacks: {
-    async signIn(user, account, profile) {
+    async signIn(user) {
       // Check if the user exists in the authorizedUsers table
       const authorizedUser = await prisma.authorizedUser.findFirst({
         where: { email: user.profile.email },

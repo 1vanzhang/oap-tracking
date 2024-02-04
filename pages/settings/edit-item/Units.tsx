@@ -1,7 +1,13 @@
 import React from "react";
 import { ItemSupplier, ItemUnit } from "./[id]";
 import Router from "next/router";
-import { Item, ProductItem } from "@prisma/client";
+type ProductItem = {
+  id: string;
+  itemId: string;
+  quantity: number;
+  unitId: string;
+  componentId: string;
+};
 
 type Props = {
   currentUnits: ItemUnit[];
@@ -27,7 +33,7 @@ export default function Units({
   const [newUnitRatio, setNewUnitRatio] = React.useState<"" | number>("");
   const [standardUnit, setStandardUnit] = React.useState(currentStandardUnit);
   const [units, setUnits] = React.useState<EditItemUnit[]>(
-    currentUnits.map((unit) => ({ ...unit }))
+    currentUnits?.map((unit) => ({ ...unit })) ?? []
   );
 
   const deleteUnit = async (unitId: string) => {
@@ -82,7 +88,7 @@ export default function Units({
       <div>
         <label>
           Existing Units
-          {units.map((unit, index) => (
+          {units?.map((unit, index) => (
             <div key={index}>
               <input
                 type="text"

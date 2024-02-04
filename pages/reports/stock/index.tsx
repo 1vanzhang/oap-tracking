@@ -2,10 +2,14 @@ import React from "react";
 import Layout from "../../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
-import { ItemUnit } from "@prisma/client";
 import DateTimePicker from "../../../components/DateTimePicker";
 import Router from "next/router";
-
+type ItemUnit = {
+  id: string;
+  name: string;
+  ratioToStandard: number;
+  itemId: string;
+};
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
     include: {

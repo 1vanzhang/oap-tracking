@@ -44,7 +44,7 @@ export default function SuppliersTable({ suppliers }: Props) {
           </tr>
         </thead>
         <tbody>
-          {suppliers.map((supplier) => (
+          {suppliers?.map((supplier) => (
             <tr key={supplier.name}>
               <td>{supplier.name}</td>
               <td>

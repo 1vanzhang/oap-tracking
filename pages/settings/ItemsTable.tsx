@@ -44,7 +44,7 @@ export default function ItemsTable({ items }: Props) {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => {
+          {items?.map((item) => {
             const supplier =
               item.suppliers.length > 0
                 ? item.suppliers.sort(

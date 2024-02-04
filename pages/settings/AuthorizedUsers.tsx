@@ -51,7 +51,7 @@ export default function AuthorizedUsers({ users }: Props) {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {users?.map((user) => (
             <tr key={user.email}>
               <td>{user.name}</td>
               <td>{user.email}</td>

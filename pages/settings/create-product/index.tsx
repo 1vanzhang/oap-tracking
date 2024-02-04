@@ -2,8 +2,13 @@ import React from "react";
 import Layout from "../../../components/Layout";
 import { GetServerSideProps } from "next";
 import prisma from "../../../lib/prisma";
-import { ItemUnit } from "@prisma/client";
 import Router from "next/router";
+type ItemUnit = {
+  id: string;
+  name: string;
+  ratioToStandard: number;
+  itemId: string;
+};
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const items = await prisma.item.findMany({

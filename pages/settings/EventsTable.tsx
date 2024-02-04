@@ -34,7 +34,7 @@ const EventsTable: React.FC<Props> = (props) => {
         </tr>
       </thead>
       <tbody>
-        {props.events.sort(compareEvents).map((event) => {
+        {props.events?.sort(compareEvents).map((event) => {
           const dates = event.dates
             .sort()
             .filter((_, i) => i == 0 || i == event.dates.length - 1)

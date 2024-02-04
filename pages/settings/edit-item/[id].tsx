@@ -5,8 +5,14 @@ import Layout from "../../../components/Layout";
 import SupplierHistory from "./SupplierHistory";
 import { Supplier } from "../SuppliersTable";
 import Units from "./Units";
-import { ProductItem } from "@prisma/client";
 import Router from "next/router";
+type ProductItem = {
+  id: string;
+  itemId: string;
+  quantity: number;
+  unitId: string;
+  componentId: string;
+};
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const item = await prisma.item.findUnique({

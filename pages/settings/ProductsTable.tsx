@@ -1,6 +1,18 @@
-import { Item, ItemUnit } from "@prisma/client";
 import Router from "next/router";
 import React from "react";
+type ItemUnit = {
+  id: string;
+  name: string;
+  ratioToStandard: number;
+  itemId: string;
+};
+type Item = {
+  id: string;
+  name: string;
+  standardUnit: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export type Product = {
   id: string;
@@ -43,7 +55,7 @@ export default function ProductsTable({ products }: Props) {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => {
+          {products?.map((product) => {
             return (
               <tr key={product.id}>
                 <td>{product.name}</td>

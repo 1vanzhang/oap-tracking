@@ -2,7 +2,12 @@ import React from "react";
 import Layout from "../../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
-import { ItemUnit } from "@prisma/client";
+type ItemUnit = {
+  id: string;
+  name: string;
+  ratioToStandard: number;
+  itemId: string;
+};
 
 export const getStaticProps: GetStaticProps = async () => {
   const products = await prisma.product.findMany({

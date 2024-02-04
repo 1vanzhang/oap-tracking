@@ -33,7 +33,7 @@ export default function ReportsTable({ reports }: Props) {
         </thead>
         <tbody>
           {reports
-            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+            ?.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
             .map((report) => (
               <tr key={report.id}>
                 <td>{moment(report.timestamp).format("YYYY-MM-DD hh:mm a")}</td>

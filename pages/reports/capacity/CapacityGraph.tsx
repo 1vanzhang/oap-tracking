@@ -1,8 +1,6 @@
 import React from "react";
-//from recharts
+
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,7 +23,7 @@ export default function CapacityGraph({ capacityReports }: Props) {
     <div>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart
-          data={capacityReports.map((report) => {
+          data={capacityReports?.map((report) => {
             return {
               timestamp: moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
               numPeople: report.numPeople,
