@@ -1,52 +1,54 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { signOut, useSession, signIn } from "next-auth/react";
 
 const Header: React.FC = () => {
   const router = useRouter();
   const isActive: (pathname: string) => boolean = (pathname) =>
     router.pathname === pathname;
 
-  let left = (
-    <div className="left">
-      <Link href="/">
-        <a className="bold" data-active={isActive("/")}>
-          Feed
-        </a>
-      </Link>
-      <style jsx>{`
-        .bold {
-          font-weight: bold;
-        }
-
-        a {
-          text-decoration: none;
-          color: #000;
-          display: inline-block;
-        }
-
-        .left a[data-active="true"] {
-          color: gray;
-        }
-
-        a + a {
-          margin-left: 1rem;
-        }
-      `}</style>
-    </div>
-  );
-
+  const { data: session, status } = useSession();
   let right = null;
+
+  if (!session) {
+    right = <button onClick={() => signIn("google")}>Sign in</button>;
+  } else {
+    right = (
+      <div>
+        {session.user.name || session.user.email}
+        <img
+          src={session.user.image}
+          alt=""
+          style={{ borderRadius: "50%", width: "25px" }}
+        />
+        <Link
+          href="/api/auth/signout"
+          onClick={(e) => {
+            e.preventDefault();
+            signOut();
+          }}
+        >
+          Sign out
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <nav>
-      {left}
-      {right}
+      <div>
+        <Link href="/">Dashboard</Link>
+        <Link href="/settings">Settings</Link>
+      </div>
+
+      <div style={{ marginLeft: "auto" }}>{right}</div>
       <style jsx>{`
         nav {
           display: flex;
           padding: 2rem;
           align-items: center;
+          border-bottom: 1px solid white;
         }
       `}</style>
     </nav>

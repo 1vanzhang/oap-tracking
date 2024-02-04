@@ -1,0 +1,235 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model CapacityReport {
+    id              String   @id @default(cuid())
+    numPeople       Int
+    timestamp       DateTime @default(now())
+    preventingEntry Boolean  @default(false)
+}
+
+model Order {
+    id           String      @id @default(cuid())
+    supplier     Supplier    @relation(fields: [supplierName], references: [name])
+    supplierName String
+    items        ItemOrder[]
+    timestamp    DateTime    @default(now())
+    createdAt    DateTime    @default(now()) @map(name: "created_at")
+    updatedAt    DateTime    @updatedAt @map(name: "updated_at")
+    actualTotal  Float?
+
+    @@map(name: "orders")
+}
+
+model ItemOrder {
+    id       String       @id @default(cuid())
+    item     ItemSupplier @relation(fields: [itemId], references: [id])
+    itemId   String
+    quantity Float
+    order    Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    orderId  String
+
+    @@map(name: "item_orders")
+}
+
+model ItemStock {
+    id String @id @default(cuid())
+
+    timestamp DateTime @default(now())
+
+    item   Item   @relation(fields: [itemId], references: [id])
+    itemId String
+
+    unit   ItemUnit? @relation(fields: [unitId], references: [id])
+    unitId String?
+
+    quantity Float
+
+    @@map(name: "item_stocks")
+}
+
+model ItemCheckout {
+    id        String   @id @default(cuid())
+    timestamp DateTime @default(now())
+
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    item   Item   @relation(fields: [itemId], references: [id])
+    itemId String
+
+    quantity Float
+
+    unit   ItemUnit? @relation(fields: [unitId], references: [id])
+    unitId String?
+
+    user   User   @relation(fields: [userId], references: [email])
+    userId String
+
+    @@map(name: "item_checkouts")
+}
+
+model Event {
+    name     String   @id
+    capacity Int
+    dates    String[]
+
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    @@map(name: "events")
+}
+
+model Product {
+    id         String             @id @default(cuid())
+    name       String
+    sellPrice  Float
+    components ProductComponent[]
+
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    @@map(name: "products")
+}
+
+model ProductComponent {
+    id        String  @id @default(cuid())
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    productId String
+
+    options ProductItem[]
+
+    @@map(name: "product_components")
+}
+
+model ProductItem {
+    id String @id @default(cuid())
+
+    item     Item      @relation(fields: [itemId], references: [id])
+    itemId   String
+    quantity Float
+    unit     ItemUnit? @relation(fields: [unitId], references: [id])
+    unitId   String?
+
+    component   ProductComponent @relation(fields: [componentId], references: [id], onDelete: Cascade)
+    componentId String
+
+    @@map(name: "product_items")
+}
+
+model ItemUnit {
+    id              String         @id @default(cuid())
+    name            String
+    ratioToStandard Float
+    item            Item           @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    itemId          String
+    productItem     ProductItem[]
+    itemSupplier    ItemSupplier[]
+    ItemCheckout    ItemCheckout[]
+    ItemStock       ItemStock[]
+
+    @@map(name: "item_units")
+}
+
+model Item {
+    id           String @id @default(cuid())
+    name         String
+    standardUnit String
+
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    units     ItemUnit[]
+    suppliers ItemSupplier[]
+
+    checkouts   ItemCheckout[]
+    itemStocks  ItemStock[]
+    productItem ProductItem[]
+
+    @@map(name: "items")
+}
+
+model ItemSupplier {
+    id String @id @default(cuid())
+
+    date         DateTime
+    pricePerUnit Float
+
+    item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+    itemId String
+
+    supplier     Supplier @relation(fields: [supplierName], references: [name])
+    supplierName String
+
+    suppliedUnit   ItemUnit    @relation(fields: [suppliedUnitId], references: [id])
+    suppliedUnitId String
+    itemOrder      ItemOrder[]
+
+    @@map(name: "item_suppliers")
+}
+
+model Supplier {
+    name         String         @id
+    itemSupplier ItemSupplier[]
+    orders       Order[]
+
+    @@map(name: "suppliers")
+}
+
+model AuthorizedUser {
+    email     String   @id
+    name      String
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    @@map(name: "authorized_users")
+}
+
+model User {
+    id            String         @id @default(cuid())
+    email         String         @unique
+    emailVerified Boolean?
+    name          String
+    image         String
+    createdAt     DateTime       @default(now()) @map(name: "created_at")
+    updatedAt     DateTime       @updatedAt @map(name: "updated_at")
+    checkouts     ItemCheckout[]
+    account       Account[]
+    session       Session[]
+
+    @@map(name: "users")
+}
