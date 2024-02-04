@@ -28,11 +28,24 @@ const Tracking: React.FC<Props> = (props) => {
     <Layout>
       <div className="page">
         <main>
-          <DashboardAction action="Report Capacity" href="/reports/capacity" />
-          <DashboardAction action="Checkout Item" href="/reports/checkout" />
-          <DashboardAction action="Report Stock" href="/reports/stock" />
-          <DashboardAction action="Order" href="/reports/order" />
-          <DashboardAction action="Profits" href="/reports/profit" />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "10px",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <DashboardAction
+              action="Report Capacity"
+              href="/reports/capacity"
+            />
+            <DashboardAction action="Checkout Item" href="/reports/checkout" />
+            <DashboardAction action="Report Stock" href="/reports/stock" />
+            <DashboardAction action="Order" href="/reports/order" />
+            <DashboardAction action="Profits" href="/reports/profit" />
+          </div>
           <CapacityReport capacityReport={props.latestCapacityReport} />
         </main>
       </div>

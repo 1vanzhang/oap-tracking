@@ -37,7 +37,7 @@ const Header: React.FC = () => {
 
   return (
     <nav>
-      <div>
+      <div style={{ display: "flex", gap: "10px" }}>
         <Link href="/">Dashboard</Link>
         <Link href="/settings">Settings</Link>
       </div>

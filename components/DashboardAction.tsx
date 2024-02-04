@@ -16,12 +16,12 @@ export default function DashboardAction({ action, href }: Props) {
         display: "grid",
         placeItems: "center",
         backgroundColor: "white",
-        width: "100px",
-        height: "100px",
+        width: "200px",
+        height: "200px",
         borderRadius: "5px",
       }}
     >
-      <div style={{ textAlign: "center" }}>{action}</div>
+      <h3 style={{ textAlign: "center" }}>{action}</h3>
     </button>
   );
 }
