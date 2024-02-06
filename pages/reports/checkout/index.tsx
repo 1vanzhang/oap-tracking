@@ -124,6 +124,13 @@ export default function Checkout({ items, checkoutHistory }: Props) {
           <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
           <button
             onClick={async () => {
+              console.log({
+                itemId: selectedItemId,
+                quantity: quantity,
+                unitId: selectedUnitId.length > 0 ? selectedUnitId : null,
+                timestamp,
+                userId,
+              });
               await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

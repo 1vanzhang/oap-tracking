@@ -45,6 +45,7 @@ const Tracking: React.FC<Props> = (props) => {
             <DashboardAction action="Report Stock" href="/reports/stock" />
             <DashboardAction action="Order" href="/reports/order" />
             <DashboardAction action="Profits" href="/reports/profit" />
+            <DashboardAction action="View Stock" href="/stock" />
           </div>
           <CapacityReport capacityReport={props.latestCapacityReport} />
         </main>
