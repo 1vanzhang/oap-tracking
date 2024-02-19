@@ -36,21 +36,13 @@ const Header: React.FC = () => {
   }
 
   return (
-    <nav>
-      <div style={{ display: "flex", gap: "10px" }}>
+    <nav className="p-3 bg-gray-300 mb-2">
+      <div className="flex gap-2">
         <Link href="/">Dashboard</Link>
         <Link href="/settings">Settings</Link>
       </div>
 
-      <div style={{ marginLeft: "auto" }}>{right}</div>
-      <style jsx>{`
-        nav {
-          display: flex;
-          padding: 2rem;
-          align-items: center;
-          border-bottom: 1px solid white;
-        }
-      `}</style>
+      {/* <div style={{ marginLeft: "auto" }}>{right}</div> */}
     </nav>
   );
 };

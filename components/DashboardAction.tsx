@@ -12,15 +12,7 @@ export default function DashboardAction({ action, href }: Props) {
       onClick={() => {
         Router.push(href);
       }}
-      style={{
-        display: "grid",
-        placeItems: "center",
-        backgroundColor: "white",
-        width: "150px",
-        maxWidth: "40vw",
-        aspectRatio: "1/1",
-        borderRadius: "5px",
-      }}
+      className="grid place-items-center w-150 max-w-40vw aspect-w-1 aspect-h-1 rounded-5"
     >
       <h3 style={{ textAlign: "center" }}>{action}</h3>
     </button>

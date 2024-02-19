@@ -91,8 +91,7 @@ export default function Profit({ products }: Props) {
     <Layout>
       <div className="page">
         <main>
-          <h1>Profit</h1>
-          <h2>Profit Margins</h2>
+          <h1>Profits</h1>
           <table>
             <thead>
               <tr>
@@ -137,7 +136,9 @@ export default function Profit({ products }: Props) {
                     <td>{product.name}</td>
                     <td>
                       {componentCosts.map((c) => (
-                        <div>{`${c.name} ($${c.cost})`}</div>
+                        <div>{`${c.name} ($${
+                          Math.round(c.cost * 1000) / 1000
+                        })`}</div>
                       ))}
                     </td>
                     <td>${Math.round(cost * 100) / 100}</td>

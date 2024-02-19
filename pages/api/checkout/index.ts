@@ -6,14 +6,13 @@
 import prisma from "../../../lib/prisma";
 
 const handleCheckout = async (req, res) => {
-  const { itemId, quantity, unitId, timestamp, userId } = req.body;
+  const { itemId, quantity, unitId, timestamp } = req.body;
   await prisma.itemCheckout.create({
     data: {
       itemId: itemId,
       quantity: quantity,
       timestamp: timestamp,
       unitId: unitId,
-      userId: userId,
     },
   });
   res.status(200).json({ message: "Checkout successful" });

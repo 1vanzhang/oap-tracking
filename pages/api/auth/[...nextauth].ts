@@ -19,6 +19,7 @@ const options: AuthOptions = {
   callbacks: {
     async signIn(user) {
       // Check if the user exists in the authorizedUsers table
+    
       const authorizedUser = await prisma.authorizedUser.findFirst({
         where: { email: user.profile.email },
       });

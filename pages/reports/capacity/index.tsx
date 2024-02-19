@@ -8,6 +8,7 @@ import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
 import CapacityGraph from "./CapacityGraph";
 import ReportsTable from "./ReportsTable";
+import Form from "../../../components/Form";
 
 export type CapacityReport = {
   id: string;
@@ -69,37 +70,32 @@ export default function ReportCapacity({ todayReports, allReports }: Props) {
   };
   return (
     <Layout>
-      <h1>Report Capacity</h1>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submitData(e);
-        }}
-      >
-        <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
-        <input
-          autoFocus
-          type="number"
-          placeholder="Number of people"
-          min={0}
-          value={numPeople}
-          onChange={(e) => {
-            setNumPeople(
-              e.target.value.length == 0 ? "" : parseInt(e.target.value)
-            );
-          }}
-        />
-        <label>
-          Preventing Entry
+      <Form title="Report Capacity" onSubmit={submitData}>
+        <div>
           <input
-            type="checkbox"
-            onChange={(e) => setPreventingEntry(e.target.checked)}
-            checked={preventingEntry}
+            autoFocus
+            type="number"
+            placeholder="Number of people"
+            min={0}
+            value={numPeople}
+            onChange={(e) => {
+              setNumPeople(
+                e.target.value.length == 0 ? "" : parseInt(e.target.value)
+              );
+            }}
           />
-        </label>
+          <label>
+            Preventing Entry
+            <input
+              type="checkbox"
+              onChange={(e) => setPreventingEntry(e.target.checked)}
+              checked={preventingEntry}
+            />
+          </label>
+        </div>
+        <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
+      </Form>
 
-        <button type="submit">Submit</button>
-      </form>
       <h2>Today's Capacity Reports</h2>
       <CapacityGraph capacityReports={todayReports} />
       <h2>All Capacity Reports</h2>

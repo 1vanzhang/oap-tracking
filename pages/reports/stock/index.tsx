@@ -4,6 +4,8 @@ import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
 import DateTimePicker from "../../../components/DateTimePicker";
 import Router from "next/router";
+import Form from "../../../components/Form";
+import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector";
 type ItemUnit = {
   id: string;
   name: string;
@@ -60,56 +62,35 @@ type Props = {
 
 export default function ReportStock({ items, stockHistory }: Props) {
   const [itemId, setItemId] = React.useState<string>("");
-  const [quantity, setQuantity] = React.useState<number | "">("");
+  const [quantity, setQuantity] = React.useState<number>(NaN);
   const [unitId, setUnitId] = React.useState<string>("");
   const [timestamp, setTimestamp] = React.useState<string>(
     new Date().toISOString()
   );
+  const submit = async () => {
+    const response = await fetch("/api/stock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId, quantity, unitId, timestamp }),
+    });
+    Router.reload();
+  };
   return (
     <Layout>
       <div className="page">
         <main>
-          <h2>Report Stock</h2>
-
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const response = await fetch("/api/stock", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ itemId, quantity, unitId, timestamp }),
-              });
-              Router.reload();
-            }}
-          >
-            <select value={itemId} onChange={(e) => setItemId(e.target.value)}>
-              <option value="">Select Item</option>
-              {items.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.valueAsNumber)}
+          <Form title="Report Stock" onSubmit={submit}>
+            <ItemAndQuantitySelector
+              itemOptions={items}
+              selectedItemId={itemId}
+              selectedUnitId={unitId}
+              quantity={quantity}
+              setSelectedItemId={setItemId}
+              setQuantity={setQuantity}
+              setSelectedUnitId={setUnitId}
             />
-            <select value={unitId} onChange={(e) => setUnitId(e.target.value)}>
-              <option value="">
-                {items.find((item) => item.id === itemId)?.standardUnit}
-              </option>
-              {items
-                .find((item) => item.id === itemId)
-                ?.units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.name}
-                  </option>
-                ))}
-            </select>
             <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
-            <button type="submit">Report Stock</button>
-          </form>
+          </Form>
 
           <h2>Stock History</h2>
           <table>

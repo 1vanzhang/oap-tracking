@@ -5,6 +5,8 @@ import prisma from "../../../lib/prisma";
 import DateTimePicker from "../../../components/DateTimePicker";
 import { useSession } from "next-auth/react";
 import Router from "next/router";
+import Form from "../../../components/Form";
+import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector";
 type ItemUnit = {
   id: string;
   name: string;
@@ -44,7 +46,6 @@ type ItemCheckout = {
   itemId: string;
   item: Item;
   quantity: number;
-  userId: string;
   unitId: string;
   unit: ItemUnit;
 };
@@ -82,71 +83,38 @@ export default function Checkout({ items, checkoutHistory }: Props) {
   const { data: session, status } = useSession();
 
   const userId = session?.user?.email;
+
+  const submit = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemId: selectedItemId,
+        quantity: quantity,
+        unitId: selectedUnitId.length > 0 ? selectedUnitId : null,
+        timestamp,
+      }),
+    });
+    Router.reload();
+  };
   return (
     <Layout>
       <div className="page">
         <main>
-          <h1>Checkout Item</h1>
-          <select
-            value={selectedItemId}
-            onChange={(e) => setSelectedItemId(e.target.value)}
-          >
-            <option value="" disabled>
-              Select Item
-            </option>
-            {items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(parseInt(e.target.value))}
-          />
+          <Form title="Checkout Item" onSubmit={submit}>
+            <ItemAndQuantitySelector
+              itemOptions={items}
+              selectedItemId={selectedItemId}
+              selectedUnitId={selectedUnitId}
+              quantity={quantity}
+              setSelectedItemId={setSelectedItemId}
+              setQuantity={setQuantity}
+              setSelectedUnitId={setSelectedUnitId}
+            />
+            <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
+          </Form>
 
-          <select
-            value={selectedUnitId}
-            onChange={(e) => setSelectedUnitId(e.target.value)}
-          >
-            <option value="">
-              {items.find((item) => item.id === selectedItemId)?.standardUnit}
-            </option>
-            {items
-              .find((item) => item.id === selectedItemId)
-              ?.units.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.name}
-                </option>
-              ))}
-          </select>
-          <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
-          <button
-            onClick={async () => {
-              console.log({
-                itemId: selectedItemId,
-                quantity: quantity,
-                unitId: selectedUnitId.length > 0 ? selectedUnitId : null,
-                timestamp,
-                userId,
-              });
-              await fetch("/api/checkout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  itemId: selectedItemId,
-                  quantity: quantity,
-                  unitId: selectedUnitId.length > 0 ? selectedUnitId : null,
-                  timestamp,
-                  userId,
-                }),
-              });
-              Router.reload();
-            }}
-          >
-            Checkout Item
-          </button>
           <h2>Checkout History</h2>
           <table>
             <thead>

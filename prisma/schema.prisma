@@ -97,9 +97,6 @@ model ItemCheckout {
     unit   ItemUnit? @relation(fields: [unitId], references: [id])
     unitId String?
 
-    user   User   @relation(fields: [userId], references: [email])
-    userId String
-
     @@map(name: "item_checkouts")
 }
 
@@ -220,14 +217,13 @@ model AuthorizedUser {
 }
 
 model User {
-    id            String         @id @default(cuid())
-    email         String         @unique
+    id            String    @id @default(cuid())
+    email         String    @unique
     emailVerified Boolean?
     name          String
     image         String
-    createdAt     DateTime       @default(now()) @map(name: "created_at")
-    updatedAt     DateTime       @updatedAt @map(name: "updated_at")
-    checkouts     ItemCheckout[]
+    createdAt     DateTime  @default(now()) @map(name: "created_at")
+    updatedAt     DateTime  @updatedAt @map(name: "updated_at")
     account       Account[]
     session       Session[]
 
