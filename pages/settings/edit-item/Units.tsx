@@ -166,6 +166,7 @@ export default function Units({
             value={newUnitRatio}
           />
           <button
+            disabled={newUnitName.length == 0 || newUnitRatio == ""}
             onClick={(e) => {
               addUnit();
             }}

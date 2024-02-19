@@ -143,20 +143,29 @@ export default function Stock({ items }: Props) {
               </h2>
               <ResponsiveContainer width={400} height={250}>
                 <LineChart
-                  data={items[selectedItem].history}
+                  data={items[selectedItem].history.map((h) => ({
+                    ...h,
+                    timestamp: h.timestamp.getTime(),
+                  }))}
                   margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
                 >
-                  <XAxis dataKey="timestamp" />
+                  <XAxis
+                    dataKey="timestamp"
+                    type="number"
+                    domain={["dataMin", "dataMax"]}
+                    tickFormatter={(unixTime) =>
+                      new Date(unixTime).toLocaleDateString()
+                    }
+                  />
                   <YAxis dataKey="stock" />
                   <CartesianGrid stroke="#f5f5f5" />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="stock"
-                    stroke="#ff7300"
-                    yAxisId={0}
+                  <Tooltip
+                    labelFormatter={(unixTime) =>
+                      new Date(unixTime).toLocaleDateString()
+                    }
                   />
+                  <Legend />
+                  <Line type="monotone" dataKey="stock" stroke="#ff7300" />
                   <CartesianGrid stroke="#000" />
                 </LineChart>
               </ResponsiveContainer>
