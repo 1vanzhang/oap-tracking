@@ -14,7 +14,7 @@ export default function Form({
   submitText = "Submit",
 }: Props) {
   return (
-    <div className="bg-stone-300 py-2 px-10 rounded w-fit mx-auto mt-2">
+    <div className="bg-stone-300 py-2 px-5 rounded w-fit mx-auto mt-2">
       <h1 className="text-center">{title}</h1>
       <form
         onSubmit={(e) => {

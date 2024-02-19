@@ -5,6 +5,13 @@ import CapacityReport, {
   CapacityReportProps,
 } from "../components/CapacityReport";
 import prisma from "../lib/prisma";
+//person icon from react-icons
+import {
+  FaUser,
+  FaShoppingCart,
+  FaSignOutAlt,
+  FaArchive,
+} from "react-icons/fa";
 
 import DashboardAction from "../components/DashboardAction";
 import { Item, ItemUnit } from "@prisma/client";
@@ -52,22 +59,31 @@ const Tracking: React.FC<Props> = (props) => {
     <Layout>
       <div className="page">
         <main>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "10px",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <h1 className="text-center">Report</h1>
+          <div className="flex flex-wrap gap-2 items-center justify-center">
             <DashboardAction
               action="Report Capacity"
               href="/reports/capacity"
+              icon={<FaUser />}
             />
-            <DashboardAction action="Checkout Item" href="/reports/checkout" />
-            <DashboardAction action="Report Stock" href="/reports/stock" />
-            <DashboardAction action="Order" href="/reports/order" />
+            <DashboardAction
+              action="Checkout Item"
+              href="/reports/checkout"
+              icon={<FaSignOutAlt />}
+            />
+            <DashboardAction
+              action="Report Stock"
+              href="/reports/stock"
+              icon={<FaArchive />}
+            />
+            <DashboardAction
+              action="Order"
+              href="/reports/order"
+              icon={<FaShoppingCart />}
+            />
+          </div>
+          <h1 className="text-center">View</h1>
+          <div className="flex flex-wrap gap-2 items-center justify-center">
             <DashboardAction action="Profits" href="/reports/profit" />
             <DashboardAction action="View Stock" href="/stock" />
           </div>
