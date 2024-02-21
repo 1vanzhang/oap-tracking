@@ -34,7 +34,7 @@ export const getStaticProps: GetStaticProps = async () => {
   });
   return {
     props: { items, checkoutHistory },
-    revalidate: 5,
+    revalidate: 1,
   };
 };
 
