@@ -6,7 +6,6 @@ import moment from "moment";
 import DateTimePicker from "../../../components/DateTimePicker";
 import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
-import CapacityGraph from "./CapacityGraph";
 import ReportsTable from "./ReportsTable";
 import Form from "../../../components/Form";
 import TimeGraph from "../../../components/TimeGraph";
