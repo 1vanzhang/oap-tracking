@@ -69,8 +69,9 @@ export default function ReportCapacity({ todayReports, allReports }: Props) {
           <input
             autoFocus
             type="number"
-            placeholder="Number of people"
+            placeholder="# People"
             min={0}
+            className="w-32"
             value={numPeople}
             onChange={(e) => {
               setNumPeople(

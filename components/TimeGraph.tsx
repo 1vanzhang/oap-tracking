@@ -72,29 +72,33 @@ export default function TimeGraph<T extends TimeData>({
   }, [data, startTime, endTime]);
 
   return (
-    <div className="w-fit mx-auto">
-      <ResponsiveContainer width={500} height={250}>
-        <AreaChart data={formattedData}>
-          <CartesianGrid strokeDasharray="3 3" />
+    <div className="w-fit mx-auto h-64 w-11/12">
+      <div className="h-48">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={formattedData}>
+            <CartesianGrid strokeDasharray="3 3" />
 
-          <XAxis
-            dataKey="timestamp"
-            type="number"
-            domain={["dataMin", "dataMax"]}
-            tickFormatter={(unixTime) => moment(unixTime).format(xAxisFormat)}
-          />
-          <YAxis dataKey={String(plotField)} />
-          <Tooltip
-            labelFormatter={(time) => moment(time).format("YYYY-MM-DD hh:mm a")}
-          />
-          <Legend />
-          <Area
-            type="monotone"
-            dataKey={String(plotField)}
-            activeDot={{ r: 8 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              tickFormatter={(unixTime) => moment(unixTime).format(xAxisFormat)}
+            />
+            <YAxis dataKey={String(plotField)} />
+            <Tooltip
+              labelFormatter={(time) =>
+                moment(time).format("YYYY-MM-DD hh:mm a")
+              }
+            />
+            <Legend />
+            <Area
+              type="monotone"
+              dataKey={String(plotField)}
+              activeDot={{ r: 8 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
       <div className="text-center">Date Range</div>
       <div className="w-fit flex gap-2 mx-auto">
         <input
