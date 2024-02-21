@@ -9,6 +9,7 @@ import prisma from "../../../lib/prisma";
 import CapacityGraph from "./CapacityGraph";
 import ReportsTable from "./ReportsTable";
 import Form from "../../../components/Form";
+import TimeGraph from "../../../components/TimeGraph";
 
 export type CapacityReport = {
   id: string;
@@ -24,12 +25,6 @@ type Props = {
 
 export const getStaticProps: GetStaticProps = async () => {
   const todayReports = await prisma.capacityReport.findMany({
-    where: {
-      timestamp: {
-        gte: moment().startOf("day").toDate(),
-        lte: moment().endOf("day").toDate(),
-      },
-    },
     orderBy: {
       timestamp: "asc",
     },
@@ -96,8 +91,8 @@ export default function ReportCapacity({ todayReports, allReports }: Props) {
         <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
       </Form>
 
-      <h2>Today's Capacity Reports</h2>
-      <CapacityGraph capacityReports={todayReports} />
+      <h2 className="text-center">Capacity Reports</h2>
+      <TimeGraph data={allReports} plotField="numPeople" />
       <h2>All Capacity Reports</h2>
       <ReportsTable reports={allReports} />
     </Layout>

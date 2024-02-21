@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { CapacityReport } from ".";
 import moment from "moment";
+import TimeGraph from "../../../components/TimeGraph";
 
 type Props = {
   capacityReports: CapacityReport[];
@@ -21,7 +22,8 @@ export default function CapacityGraph({ capacityReports }: Props) {
   //x=timestamp, y=numPeople
   return (
     <div>
-      <ResponsiveContainer width="100%" height={400}>
+      <TimeGraph data={capacityReports} plotField="numPeople" />
+      {/* <ResponsiveContainer width="100%" height={400}>
         <AreaChart
           data={capacityReports?.map((report) => {
             return {
@@ -41,7 +43,7 @@ export default function CapacityGraph({ capacityReports }: Props) {
           <Legend />
           <Area type="monotone" dataKey="numPeople" activeDot={{ r: 8 }} />
         </AreaChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer> */}
     </div>
   );
 }
