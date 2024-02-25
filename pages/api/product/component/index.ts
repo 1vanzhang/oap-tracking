@@ -1,16 +1,5 @@
 import { getSession } from "next-auth/react";
 import prisma from "../../../../lib/prisma";
-// await fetch(`/api/product/component`, {
-//   method: "POST",
-//   headers: { "Content-Type": "application/json" },
-//   body: JSON.stringify({
-//     productId: product.id,
-//     itemId: newItemId,
-//     quantity: newQuantity,
-//     unitId: newUnitId,
-//     componentId: product.components[selectedIndex - 1]?.id || null,
-//   }),
-// });
 
 const handleAddComponent = async (req, res) => {
   const { productId, itemId, quantity, unitId, componentId } = req.body;

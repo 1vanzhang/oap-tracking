@@ -4,12 +4,8 @@ import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
 import Router from "next/router";
 
-type Supplier = {
-  name: string;
-};
-
 type Props = {};
-type ItemUnit = {
+type NewItemUnit = {
   name: string;
   ratioToStandard: number;
 };
@@ -17,7 +13,7 @@ type ItemUnit = {
 export default function CreateItem(props: Props) {
   const [name, setName] = React.useState<string>("");
   const [standardUnit, setStandardUnit] = React.useState<string>("");
-  const [units, setUnits] = React.useState<ItemUnit[]>([]);
+  const [units, setUnits] = React.useState<NewItemUnit[]>([]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

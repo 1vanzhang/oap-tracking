@@ -3,6 +3,7 @@ import React from "react";
 import prisma from "../../../lib/prisma";
 import Layout from "../../../components/Layout";
 import Router from "next/router";
+import { Prisma } from "@prisma/client";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const product = await prisma.product.findUnique({
@@ -32,47 +33,26 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
-type ProductOption = {
-  id: string;
-  itemId: string;
-  quantity: number;
-  unitId: string;
-  item: {
-    name: string;
-    standardUnit: string;
-  };
-  unit: {
-    name: string;
-  };
-};
-
-type ProductComponent = {
-  id: string;
-  productId: string;
-  product: string;
-  options: ProductOption[];
-};
-
-type Product = {
-  id: string;
-  name: string;
-  sellPrice: number;
-  components: ProductComponent[];
-};
-
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  units: {
-    id: string;
-    name: string;
-  }[];
-};
-
 type Props = {
-  product: Product;
-  items: Item[];
+  product: Prisma.ProductGetPayload<{
+    include: {
+      components: {
+        include: {
+          options: {
+            include: {
+              item: true;
+              unit: true;
+            };
+          };
+        };
+      };
+    };
+  }>;
+  items: Prisma.ItemGetPayload<{
+    include: {
+      units: true;
+    };
+  }>[];
 };
 
 export default function EditProduct({ product, items }: Props) {

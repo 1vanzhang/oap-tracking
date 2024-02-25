@@ -7,12 +7,9 @@ import { useSession } from "next-auth/react";
 import Router from "next/router";
 import Form from "../../../components/Form";
 import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
+import DeleteButton from "../../../components/DeleteButton";
+import DataTable from "../../../components/DataTable";
+import { Prisma } from "@prisma/client";
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
     include: {
@@ -38,29 +35,22 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-type ItemCheckout = {
-  id: string;
-  timestamp: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  itemId: string;
-  item: Item;
-  quantity: number;
-  unitId: string;
-  unit: ItemUnit;
-};
-
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  units: ItemUnit[];
-};
 type Props = {
-  items: Item[];
-  checkoutHistory: ItemCheckout[];
+  items: Prisma.ItemGetPayload<{
+    include: {
+      units: true;
+    };
+  }>[];
+  checkoutHistory: Prisma.ItemCheckoutGetPayload<{
+    include: {
+      item: {
+        include: {
+          units: true;
+        };
+      };
+      unit: true;
+    };
+  }>[];
 };
 
 export default function Checkout({ items, checkoutHistory }: Props) {
@@ -114,46 +104,29 @@ export default function Checkout({ items, checkoutHistory }: Props) {
             />
             <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
           </Form>
-
-          <h2>Checkout History</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Timestamp</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {checkoutHistory.map((checkout) => {
-                return (
-                  <tr key={checkout.id}>
-                    <td>{checkout.item.name}</td>
-                    <td>
-                      {checkout.quantity}{" "}
-                      {checkout.unit?.name || checkout.item.standardUnit}
-                    </td>
-                    <td>{new Date(checkout.timestamp).toLocaleString()}</td>
-                    <td>
-                      <button
-                        onClick={async () => {
-                          await fetch("/api/checkout", {
-                            method: "DELETE",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ id: checkout.id }),
-                          });
-                          Router.reload();
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <DataTable
+            title="Checkout History"
+            columns={["Item", "Quantity", "Timestamp", "Delete"]}
+            data={checkoutHistory.map((checkout) => [
+              checkout.item.name,
+              `${checkout.quantity} ${
+                checkout.unit?.name || checkout.item.standardUnit
+              }`,
+              new Date(checkout.timestamp).toLocaleString(),
+              <DeleteButton
+                onClick={async () => {
+                  await fetch("/api/checkout", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: checkout.id }),
+                  });
+                  Router.reload();
+                }}
+              >
+                Delete
+              </DeleteButton>,
+            ])}
+          />
         </main>
       </div>
     </Layout>

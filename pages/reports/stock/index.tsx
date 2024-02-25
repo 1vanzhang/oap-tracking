@@ -6,12 +6,10 @@ import DateTimePicker from "../../../components/DateTimePicker";
 import Router from "next/router";
 import Form from "../../../components/Form";
 import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
+import DeleteButton from "../../../components/DeleteButton";
+import DataTable from "../../../components/DataTable";
+import { Prisma } from "@prisma/client";
+
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
     include: {
@@ -37,27 +35,22 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-type ItemStock = {
-  id: string;
-  timestamp: Date;
-  itemId: string;
-  item: Item;
-  quantity: number;
-  unitId: string;
-  unit: ItemUnit;
-};
-
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  units: ItemUnit[];
-};
 type Props = {
-  items: Item[];
-  stockHistory: ItemStock[];
+  items: Prisma.ItemGetPayload<{
+    include: {
+      units: true;
+    };
+  }>[];
+  stockHistory: Prisma.ItemStockGetPayload<{
+    include: {
+      item: {
+        include: {
+          units: true;
+        };
+      };
+      unit: true;
+    };
+  }>[];
 };
 
 export default function ReportStock({ items, stockHistory }: Props) {
@@ -92,42 +85,28 @@ export default function ReportStock({ items, stockHistory }: Props) {
             <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
           </Form>
 
-          <h2>Stock History</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-                <th>Timestamp</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stockHistory.map((stock) => (
-                <tr key={stock.id}>
-                  <td>{stock.item.name}</td>
-                  <td>{stock.quantity}</td>
-                  <td>{stock.unit.name}</td>
-                  <td>{stock.timestamp.toLocaleString()}</td>
-                  <td>
-                    <button
-                      onClick={async () => {
-                        await fetch("/api/stock", {
-                          method: "DELETE",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ id: stock.id }),
-                        });
-                        Router.reload();
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            title="Stock History"
+            columns={["Item", "Quantity", "Unit", "Timestamp", "Delete"]}
+            data={stockHistory.map((stock) => [
+              stock.item.name,
+              stock.quantity,
+              stock.unit.name,
+              stock.timestamp.toLocaleString(),
+              <DeleteButton
+                onClick={async () => {
+                  await fetch("/api/stock", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: stock.id }),
+                  });
+                  Router.reload();
+                }}
+              >
+                Delete
+              </DeleteButton>,
+            ])}
+          />
         </main>
       </div>
     </Layout>

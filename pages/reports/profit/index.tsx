@@ -2,12 +2,7 @@ import React from "react";
 import Layout from "../../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
+import { Prisma } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
   const products = await prisma.product.findMany({
@@ -39,51 +34,29 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-type ItemSupplier = {
-  id: string;
-  date: Date;
-  pricePerUnit: number;
-  itemId: string;
-  supplierName: string;
-  suppliedUnitId: string;
-  suppliedUnit: ItemUnit;
-};
-
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  suppliers: ItemSupplier[];
-};
-
-type ProductItem = {
-  id: string;
-  itemId: string;
-  unitId: string;
-  quantity: number;
-  item: Item;
-  unit: ItemUnit;
-};
-
-type ProductComponent = {
-  id: string;
-  productId: string;
-  options: ProductItem[];
-};
-
-type Product = {
-  id: string;
-  name: string;
-  sellPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
-  components: ProductComponent[];
-};
-
 type Props = {
-  products: Product[];
+  products: Prisma.ProductGetPayload<{
+    include: {
+      components: {
+        include: {
+          options: {
+            include: {
+              item: {
+                include: {
+                  suppliers: {
+                    include: {
+                      suppliedUnit: true;
+                    };
+                  };
+                };
+              };
+              unit: true;
+            };
+          };
+        };
+      };
+    };
+  }>[];
 };
 
 export default function Profit({ products }: Props) {

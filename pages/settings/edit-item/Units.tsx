@@ -1,16 +1,15 @@
 import React from "react";
-import { ItemSupplier, ItemUnit } from "./[id]";
+import { ItemUnit, ItemSupplier, ProductItem, Prisma } from "@prisma/client";
+
 import Router from "next/router";
-type ProductItem = {
-  id: string;
-  itemId: string;
-  quantity: number;
-  unitId: string;
-  componentId: string;
-};
 
 type Props = {
-  currentUnits: ItemUnit[];
+  currentUnits: Prisma.ItemUnitGetPayload<{
+    include: {
+      productItem: true;
+      itemSupplier: true;
+    };
+  }>[];
   currentStandardUnit: string;
   itemId: string;
 };
@@ -32,9 +31,7 @@ export default function Units({
   const [newUnitName, setNewUnitName] = React.useState("");
   const [newUnitRatio, setNewUnitRatio] = React.useState<"" | number>("");
   const [standardUnit, setStandardUnit] = React.useState(currentStandardUnit);
-  const [units, setUnits] = React.useState<EditItemUnit[]>(
-    currentUnits?.map((unit) => ({ ...unit })) ?? []
-  );
+  const [units, setUnits] = React.useState<EditItemUnit[]>(currentUnits ?? []);
 
   const deleteUnit = async (unitId: string) => {
     fetch(`/api/unit`, {

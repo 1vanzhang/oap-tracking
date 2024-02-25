@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 
 import DashboardAction from "../components/DashboardAction";
-import { Item, ItemUnit } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
   const latestCapacityReport = await prisma.capacityReport.findFirst({
@@ -31,28 +31,20 @@ export const getStaticProps: GetStaticProps = async () => {
       timestamp: "desc",
     },
   });
-  console.log(lastItemCheckout);
   return {
     props: { latestCapacityReport, lastItemCheckout },
     revalidate: 5,
   };
 };
 
-type ItemCheckout = {
-  id: string;
-  timestamp: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  itemId: string;
-  quantity: number;
-  unitId: string;
-  item: Item;
-  unit: ItemUnit;
-};
-
 type Props = {
   latestCapacityReport?: CapacityReportProps;
-  lastItemCheckout?: ItemCheckout;
+  lastItemCheckout?: Prisma.ItemCheckoutGetPayload<{
+    include: {
+      item: true;
+      unit: true;
+    };
+  }>;
 };
 const Tracking: React.FC<Props> = (props) => {
   return (

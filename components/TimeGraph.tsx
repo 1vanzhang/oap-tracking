@@ -18,14 +18,16 @@ type TimeData = {
 type Props<T extends TimeData> = {
   data: T[];
   plotField: keyof T & string;
+  defaultStartTime?: string;
 };
 
 export default function TimeGraph<T extends TimeData>({
   data,
   plotField,
+  defaultStartTime,
 }: Props<T>) {
   const [startTime, setStartTime] = React.useState<string | null>(
-    moment().subtract(14, "day").format("YYYY-MM-DD")
+    defaultStartTime || moment().subtract(14, "day").format("YYYY-MM-DD")
   );
   const [endTime, setEndTime] = React.useState<string | null>(
     moment().format("YYYY-MM-DD")
@@ -81,7 +83,10 @@ export default function TimeGraph<T extends TimeData>({
             <XAxis
               dataKey="timestamp"
               type="number"
-              domain={["dataMin", "dataMax"]}
+              domain={[
+                moment(startTime).valueOf(),
+                moment(endTime).endOf("D").valueOf(),
+              ]}
               tickFormatter={(unixTime) => moment(unixTime).format(xAxisFormat)}
             />
             <YAxis dataKey={String(plotField)} />

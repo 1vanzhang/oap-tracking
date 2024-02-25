@@ -1,12 +1,5 @@
 import React from "react";
-
-export type AuthorizedUser = {
-  name: string;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
+import { AuthorizedUser } from "@prisma/client";
 type Props = {
   users: AuthorizedUser[];
 };

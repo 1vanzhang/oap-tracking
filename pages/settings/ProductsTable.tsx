@@ -1,45 +1,30 @@
 import Router from "next/router";
 import React from "react";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  sellPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
-  components: ProductComponent[];
-};
-
-type ProductComponent = {
-  id: string;
-  productId: string;
-  options: ProductItem[];
-};
-type ProductItem = {
-  id: string;
-  itemId: string;
-  quantity: number;
-  unitId: string;
-  componentId: string;
-  item: Item;
-  unit: ItemUnit;
-};
+import { Prisma } from "@prisma/client";
 
 type Props = {
-  products: Product[];
+  products: Prisma.ProductGetPayload<{
+    include: {
+      components: {
+        include: {
+          options: {
+            include: {
+              item: {
+                include: {
+                  suppliers: {
+                    include: {
+                      suppliedUnit: true;
+                    };
+                  };
+                };
+              };
+              unit: true;
+            };
+          };
+        };
+      };
+    };
+  }>[];
 };
 
 export default function ProductsTable({ products }: Props) {

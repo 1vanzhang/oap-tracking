@@ -9,13 +9,7 @@ import prisma from "../../../lib/prisma";
 import ReportsTable from "./ReportsTable";
 import Form from "../../../components/Form";
 import TimeGraph from "../../../components/TimeGraph";
-
-export type CapacityReport = {
-  id: string;
-  numPeople: number;
-  timestamp: Date;
-  preventingEntry: boolean;
-};
+import { CapacityReport } from "@prisma/client";
 
 type Props = {
   todayReports: CapacityReport[];
@@ -57,7 +51,7 @@ export default function ReportCapacity({ todayReports, allReports }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      await Router.push("/");
+      Router.reload();
     } catch (error) {
       console.error(error);
     }
@@ -92,8 +86,11 @@ export default function ReportCapacity({ todayReports, allReports }: Props) {
       </Form>
 
       <h2 className="text-center">Capacity Reports</h2>
-      <TimeGraph data={allReports} plotField="numPeople" />
-      <h2>All Capacity Reports</h2>
+      <TimeGraph
+        data={allReports}
+        plotField="numPeople"
+        defaultStartTime={moment().subtract(1, "day").format("YYYY-MM-DD")}
+      />
       <ReportsTable reports={allReports} />
     </Layout>
   );

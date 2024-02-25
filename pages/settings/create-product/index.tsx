@@ -3,12 +3,7 @@ import Layout from "../../../components/Layout";
 import { GetServerSideProps } from "next";
 import prisma from "../../../lib/prisma";
 import Router from "next/router";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
+import { Prisma } from "@prisma/client";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const items = await prisma.item.findMany({
@@ -21,30 +16,26 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 type Props = {
-  items: Item[];
+  items: Prisma.ItemGetPayload<{
+    include: {
+      units: true;
+    };
+  }>[];
 };
 
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  units: ItemUnit[];
-};
-type ProductItem = {
+type NewProductItem = {
   itemId: string;
   quantity: number;
   unitId: string;
 };
-type ProductComponent = {
-  options: ProductItem[];
+type NewProductComponent = {
+  options: NewProductItem[];
 };
 
 export default function CreateProduct({ items }: Props) {
   const [name, setName] = React.useState("");
   const [sellPrice, setSellPrice] = React.useState<number | "">("");
-  const [components, setComponents] = React.useState<ProductComponent[]>([]);
+  const [components, setComponents] = React.useState<NewProductComponent[]>([]);
   const addComponent = (e) => {
     e.preventDefault();
     setComponents([

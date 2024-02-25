@@ -1,20 +1,6 @@
 import { getSession } from "next-auth/react";
 import prisma from "../../../lib/prisma";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
 
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  units: ItemUnit[];
-};
 type ProductItem = {
   itemId: string;
   quantity: number;

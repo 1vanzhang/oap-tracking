@@ -3,16 +3,9 @@ import React from "react";
 import prisma from "../../../lib/prisma";
 import Layout from "../../../components/Layout";
 import SupplierHistory from "./SupplierHistory";
-import { Supplier } from "../SuppliersTable";
 import Units from "./Units";
 import Router from "next/router";
-type ProductItem = {
-  id: string;
-  itemId: string;
-  quantity: number;
-  unitId: string;
-  componentId: string;
-};
+import { ItemUnit, Prisma, Supplier } from "@prisma/client";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const item = await prisma.item.findUnique({
@@ -39,36 +32,22 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   };
 };
 
-export type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-  productItem: ProductItem[];
-  itemSupplier: ItemSupplier[];
-};
-
-export type ItemSupplier = {
-  id: string;
-  itemId: string;
-  date: Date;
-  pricePerUnit: number;
-  suppliedUnit: ItemUnit;
-  supplierName: string;
-};
-
-export type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-  units: ItemUnit[];
-  suppliers: ItemSupplier[];
-};
-
 type Props = {
-  item: Item;
+  item: Prisma.ItemGetPayload<{
+    include: {
+      units: {
+        include: {
+          productItem: true;
+          itemSupplier: true;
+        };
+      };
+      suppliers: {
+        include: {
+          suppliedUnit: true;
+        };
+      };
+    };
+  }>;
   supplierOptions: Supplier[];
 };
 

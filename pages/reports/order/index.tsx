@@ -4,19 +4,7 @@ import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
 import DateTimePicker from "../../../components/DateTimePicker";
 import Router from "next/router";
-type ItemUnit = {
-  id: string;
-  name: string;
-  ratioToStandard: number;
-  itemId: string;
-};
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { Prisma, ItemOrder, Order } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
   let suppliers = await prisma.supplier.findMany({
@@ -62,39 +50,21 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-type ItemSupplier = {
-  id: string;
-  date: Date;
-  pricePerUnit: number;
-  itemId: string;
-  item: Item;
-  supplierName: string;
-  suppliedUnitId: string;
-  suppliedUnit: ItemUnit;
-};
-
-type Supplier = {
-  name: string;
-  itemSupplier: ItemSupplier[];
-};
-type ItemOrder = {
-  itemId: string;
-  quantity: number;
-};
-
-type Order = {
-  id: string;
-  timestamp: Date;
-  supplierName: string;
-  actualTotal: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
 type Props = {
-  suppliers: Supplier[];
+  suppliers: Prisma.SupplierGetPayload<{
+    include: {
+      itemSupplier: {
+        include: {
+          item: true;
+          suppliedUnit: true;
+        };
+      };
+    };
+  }>[];
   orders: Order[];
 };
+
+type NewItemOrder = Omit<ItemOrder, "id" | "orderId">;
 
 export default function Order({ suppliers, orders }: Props) {
   const [selectedSupplierId, setSelectedSupplierId] =
@@ -102,7 +72,7 @@ export default function Order({ suppliers, orders }: Props) {
   const selectedSupplier = useMemo(() => {
     return suppliers.find((supplier) => supplier.name === selectedSupplierId);
   }, [selectedSupplierId]);
-  const [order, setOrder] = React.useState<ItemOrder[]>([]);
+  const [order, setOrder] = React.useState<NewItemOrder[]>([]);
   const [timestamp, setTimestamp] = React.useState<string>(
     new Date().toISOString()
   );
@@ -122,7 +92,7 @@ export default function Order({ suppliers, orders }: Props) {
 
   useEffect(() => {
     if (selectedSupplier) {
-      const order: ItemOrder[] = [];
+      const order: NewItemOrder[] = [];
       selectedSupplier.itemSupplier.forEach((itemSupplier) => {
         order.push({ itemId: itemSupplier.id, quantity: 0 });
       });

@@ -1,6 +1,8 @@
 import React from "react";
-import { CapacityReport } from ".";
+import { CapacityReport } from "@prisma/client";
 import moment from "moment";
+import DeleteButton from "../../../components/DeleteButton";
+import DataTable from "../../../components/DataTable";
 
 type Props = {
   reports: CapacityReport[];
@@ -16,42 +18,28 @@ export default function ReportsTable({ reports }: Props) {
       },
     });
     if (response.ok) {
-      alert("Report deleted");
       location.reload();
     }
   };
   return (
     <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Number of people</th>
-            <th>Preventing entry</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports
-            ?.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-            .map((report) => (
-              <tr key={report.id}>
-                <td>{moment(report.timestamp).format("YYYY-MM-DD hh:mm a")}</td>
-                <td>{report.numPeople}</td>
-                <td>{report.preventingEntry ? "Yes" : "No"}</td>
-                <td>
-                  <button
-                    onClick={() => {
-                      deleteReport(report.id);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
+      <DataTable
+        title="Capacity Reports"
+        columns={[
+          "Timestamp",
+          "Number of people",
+          "Preventing entry",
+          "Delete",
+        ]}
+        data={reports.map((report) => [
+          moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
+          report.numPeople,
+          report.preventingEntry ? "Yes" : "No",
+          <DeleteButton onClick={() => deleteReport(report.id)}>
+            Delete
+          </DeleteButton>,
+        ])}
+      />
     </div>
   );
 }

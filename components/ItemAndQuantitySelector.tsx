@@ -1,21 +1,18 @@
-import { ItemUnit } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import React from "react";
 
 type Props = {
-  itemOptions: Item[];
+  itemOptions: Prisma.ItemGetPayload<{
+    include: {
+      units: true;
+    };
+  }>[];
   selectedItemId: string;
   quantity: number;
   selectedUnitId: string;
   setSelectedItemId: (id: string) => void;
   setQuantity: (quantity: number) => void;
   setSelectedUnitId: (id: string) => void;
-};
-
-type Item = {
-  id: string;
-  name: string;
-  standardUnit: string;
-  units: ItemUnit[];
 };
 
 export default function ItemAndQuantitySelector({

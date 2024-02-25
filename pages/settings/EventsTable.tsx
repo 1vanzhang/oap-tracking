@@ -3,13 +3,8 @@ import { GetStaticProps } from "next";
 import prisma from "../../lib/prisma";
 import Router from "next/router";
 import moment from "moment";
-export type Event = {
-  dates: string[];
-  capacity: number;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { Event } from "@prisma/client";
+
 type Props = { events: Event[] };
 
 function compareEvents(a: Event, b: Event) {
