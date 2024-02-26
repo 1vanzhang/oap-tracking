@@ -35,7 +35,7 @@ export default function ReportCapacity({ allReports }: Props) {
         plotField="numPeople"
         defaultStartTime={moment().subtract(1, "day").format("YYYY-MM-DD")}
       />
-      <ReportsTable reports={allReports ?? []} />
+      <ReportsTable reports={allReports} />
     </Layout>
   );
 }

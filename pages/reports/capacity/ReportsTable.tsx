@@ -5,7 +5,7 @@ import DeleteButton from "../../../components/DeleteButton";
 import DataTable from "../../../components/DataTable";
 
 type Props = {
-  reports: CapacityReport[];
+  reports?: CapacityReport[];
 };
 
 export default function ReportsTable({ reports }: Props) {
@@ -23,23 +23,27 @@ export default function ReportsTable({ reports }: Props) {
   };
   return (
     <div>
-      <DataTable
-        title="Capacity Reports"
-        columns={[
-          "Timestamp",
-          "Number of people",
-          "Preventing entry",
-          "Delete",
-        ]}
-        data={reports?.map((report) => [
-          moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
-          report.numPeople,
-          report.preventingEntry ? "Yes" : "No",
-          <DeleteButton onClick={() => deleteReport(report.id)}>
-            Delete
-          </DeleteButton>,
-        ])}
-      />
+      {
+        <DataTable
+          title="Capacity Reports"
+          columns={[
+            "Timestamp",
+            "Number of people",
+            "Preventing entry",
+            "Delete",
+          ]}
+          data={
+            reports?.map((report) => [
+              moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
+              report.numPeople,
+              report.preventingEntry ? "Yes" : "No",
+              <DeleteButton onClick={() => deleteReport(report.id)}>
+                Delete
+              </DeleteButton>,
+            ]) ?? []
+          }
+        />
+      }
     </div>
   );
 }
