@@ -1,3 +1,4 @@
+"use client";
 import { Event } from "@prisma/client";
 import moment from "moment";
 import React, { useMemo } from "react";
