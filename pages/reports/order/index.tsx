@@ -5,37 +5,45 @@ import prisma from "../../../lib/prisma";
 import DateTimePicker from "../../../components/DateTimePicker";
 import Router from "next/router";
 import { Prisma, ItemOrder, Order } from "@prisma/client";
+import DataTable from "../../../components/DataTable";
+import moment from "moment";
+import { getItemSupplierAtDate } from "../../../utils/supplier.utils";
+import { getCurrentStock } from "../../../utils/stock.utils";
 
 export const getStaticProps: GetStaticProps = async () => {
   let suppliers = await prisma.supplier.findMany({
     include: {
       itemSupplier: {
         include: {
-          item: true,
+          item: {
+            include: {
+              units: true,
+              suppliers: {
+                include: {
+                  suppliedUnit: true,
+                  itemOrder: {
+                    include: {
+                      order: true,
+                    },
+                  },
+                },
+              },
+              checkouts: {
+                include: {
+                  unit: true,
+                },
+              },
+              itemStocks: {
+                include: {
+                  unit: true,
+                },
+              },
+            },
+          },
           suppliedUnit: true,
         },
       },
     },
-  });
-  //
-  suppliers = suppliers.map((supplier) => {
-    const newItemSupplier = supplier.itemSupplier.sort(
-      (a, b) => b.date.getTime() - a.date.getTime()
-    );
-
-    const seenItemIds = new Set<string>();
-    const uniqueItemSupplier = newItemSupplier.filter((itemSupplier) => {
-      if (seenItemIds.has(itemSupplier.itemId)) {
-        return false;
-      }
-      seenItemIds.add(itemSupplier.itemId);
-      return true;
-    });
-
-    return {
-      ...supplier,
-      itemSupplier: uniqueItemSupplier,
-    };
   });
 
   const orders = await prisma.order.findMany({
@@ -55,7 +63,31 @@ type Props = {
     include: {
       itemSupplier: {
         include: {
-          item: true;
+          item: {
+            include: {
+              units: true;
+              suppliers: {
+                include: {
+                  suppliedUnit: true;
+                  itemOrder: {
+                    include: {
+                      order: true;
+                    };
+                  };
+                };
+              };
+              checkouts: {
+                include: {
+                  unit: true;
+                };
+              };
+              itemStocks: {
+                include: {
+                  unit: true;
+                };
+              };
+            };
+          };
           suppliedUnit: true;
         };
       };
@@ -64,7 +96,10 @@ type Props = {
   orders: Order[];
 };
 
-type NewItemOrder = Omit<ItemOrder, "id" | "orderId">;
+type NewItemOrder = {
+  itemId: string;
+  quantity: number;
+};
 
 export default function Order({ suppliers, orders }: Props) {
   const [selectedSupplierId, setSelectedSupplierId] =
@@ -73,9 +108,7 @@ export default function Order({ suppliers, orders }: Props) {
     return suppliers.find((supplier) => supplier.name === selectedSupplierId);
   }, [selectedSupplierId]);
   const [order, setOrder] = React.useState<NewItemOrder[]>([]);
-  const [timestamp, setTimestamp] = React.useState<string>(
-    new Date().toISOString()
-  );
+  const [timestamp, setTimestamp] = React.useState<string>("");
   const [actualTotal, setActualTotal] = React.useState<number | "">(0);
 
   useEffect(() => {
@@ -93,162 +126,183 @@ export default function Order({ suppliers, orders }: Props) {
   useEffect(() => {
     if (selectedSupplier) {
       const order: NewItemOrder[] = [];
-      selectedSupplier.itemSupplier.forEach((itemSupplier) => {
-        order.push({ itemId: itemSupplier.id, quantity: 0 });
+      const uniqueItemIds = new Set(
+        selectedSupplier.itemSupplier.map((item) => item.item.id)
+      );
+      uniqueItemIds.forEach((itemId) => {
+        const itemSupplier = getItemSupplierAtDate(
+          suppliers,
+          itemId,
+          moment(timestamp).endOf("day").toDate()
+        );
+        if (itemSupplier?.supplierName === selectedSupplier.name) {
+          order.push({
+            itemId: itemSupplier.id,
+            quantity: 0,
+          });
+          uniqueItemIds.delete(itemSupplier.item.id);
+        }
       });
+
       setOrder(order);
     }
-  }, [selectedSupplier]);
+  }, [selectedSupplier, timestamp]);
 
   return (
     <Layout>
       <div className="page">
         <main>
           <h1>Order</h1>
-          <select
-            value={selectedSupplierId}
-            onChange={(e) => {
-              setOrder([]);
-              setSelectedSupplierId(e.target.value);
-            }}
-          >
-            <option value="">Select Supplier</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier.name} value={supplier.name}>
-                {supplier.name}
-              </option>
-            ))}
-          </select>
-          {selectedSupplier && (
+          <h2>Select Date</h2>
+          <input
+            type="date"
+            value={timestamp}
+            onChange={(e) => setTimestamp(e.target.value)}
+          />
+          {timestamp != "" && (
             <div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Price Per Unit</th>
-                    <th>Supplied Unit</th>
-                    <th>Order Quantity</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.map((orderItem) => {
-                    const item = selectedSupplier.itemSupplier.find(
-                      (itemSupplier) => itemSupplier.id === orderItem.itemId
-                    );
-                    return (
-                      <tr key={orderItem.itemId}>
-                        <td>{item.item.name}</td>
-                        <td>{item.pricePerUnit}</td>
-                        <td>{item.suppliedUnit.name}</td>
-                        <td>
-                          <input
-                            type="number"
-                            value={orderItem.quantity}
-                            onChange={(e) => {
-                              const newOrder = order.map((item) => {
-                                if (item.itemId === orderItem.itemId) {
-                                  return {
-                                    ...item,
-                                    quantity: e.target.valueAsNumber,
-                                  };
-                                }
-                                return item;
-                              });
-                              setOrder(newOrder);
-                            }}
-                          />
-                        </td>
-                        <td>
-                          $
-                          {isNaN(item.pricePerUnit * orderItem.quantity)
-                            ? "0"
-                            : item.pricePerUnit * orderItem.quantity}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <h3>
-                  {`Total: $${order.reduce((total, item) => {
-                    const supplierItem = selectedSupplier.itemSupplier.find(
-                      (supplierItem) => supplierItem.id === item.itemId
-                    );
-                    const itemVal = isNaN(
-                      supplierItem.pricePerUnit * item.quantity
-                    )
-                      ? 0
-                      : supplierItem.pricePerUnit * item.quantity;
-                    return total + itemVal;
-                  }, 0)}`}
-                </h3>
-              </table>
-              <DateTimePicker
-                timestamp={timestamp}
-                setTimestamp={setTimestamp}
-              />
-              <label>
-                Actual Total ($)
-                <input
-                  type="number"
-                  value={actualTotal}
-                  onChange={(e) => setActualTotal(e.target.valueAsNumber)}
-                />
-              </label>
-
-              <button
-                onClick={async () => {
-                  await fetch("/api/order", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      order,
-                      supplierName: selectedSupplier.name,
-                      timestamp,
-                      actualTotal,
-                    }),
-                  });
-                  Router.reload();
+              <select
+                className="h-8 rounded mt-2 mb-2"
+                value={selectedSupplierId}
+                onChange={(e) => {
+                  setOrder([]);
+                  setSelectedSupplierId(e.target.value);
                 }}
               >
-                Save
-              </button>
+                <option value="">Select Supplier</option>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.name} value={supplier.name}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+              {selectedSupplier && (
+                <div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Price Per Unit</th>
+                        <th>Price Date</th>
+                        <th>Current Stock</th>
+                        <th>Order Quantity</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order.map((orderItem) => {
+                        const item = selectedSupplier.itemSupplier.find(
+                          (itemSupplier) => itemSupplier.id === orderItem.itemId
+                        );
+                        const stock = (
+                          getCurrentStock(item.item) /
+                          item.suppliedUnit.ratioToStandard
+                        ).toFixed(1);
+
+                        return (
+                          <tr key={orderItem.itemId}>
+                            <td>{item.item.name}</td>
+                            <td>
+                              ${item.pricePerUnit.toFixed(2)}/
+                              {item.suppliedUnit.name}
+                            </td>
+                            <td>{moment(item.date).format("YYYY-MM-DD")}</td>
+                            <td>
+                              {stock} {item.suppliedUnit.name}
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                min={0}
+                                value={orderItem.quantity}
+                                onChange={(e) => {
+                                  const newOrder = order.map((item) => {
+                                    if (item.itemId === orderItem.itemId) {
+                                      return {
+                                        ...item,
+                                        quantity: e.target.valueAsNumber,
+                                      };
+                                    }
+                                    return item;
+                                  });
+                                  setOrder(newOrder);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              $
+                              {isNaN(item.pricePerUnit * orderItem.quantity)
+                                ? "0"
+                                : (
+                                    item.pricePerUnit * orderItem.quantity
+                                  ).toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <h3>
+                      {`Total: $${order
+                        .reduce((total, item) => {
+                          const supplierItem =
+                            selectedSupplier.itemSupplier.find(
+                              (supplierItem) => supplierItem.id === item.itemId
+                            );
+                          const itemVal = isNaN(
+                            supplierItem.pricePerUnit * item.quantity
+                          )
+                            ? 0
+                            : supplierItem.pricePerUnit * item.quantity;
+                          return total + itemVal;
+                        }, 0)
+                        .toFixed(2)}`}
+                    </h3>
+                  </table>
+
+                  <label>
+                    Actual Total ($)
+                    <input
+                      type="number"
+                      value={actualTotal}
+                      onChange={(e) => setActualTotal(e.target.valueAsNumber)}
+                    />
+                  </label>
+
+                  <button
+                    onClick={async () => {
+                      await fetch("/api/order", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          order,
+                          supplierName: selectedSupplier.name,
+                          timestamp,
+                          actualTotal,
+                        }),
+                      });
+                      Router.reload();
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
           )}
-          <h2>Order History</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Supplier</th>
-                <th>Timestamp</th>
-                <th>Actual Total</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.supplierName}</td>
-                  <td>{order.timestamp.toLocaleString()}</td>
-                  <td>{order.actualTotal}</td>
-                  <td>
-                    <button
-                      onClick={async () => {
-                        await fetch("/api/order", {
-                          method: "DELETE",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ id: order.id }),
-                        });
-                        Router.reload();
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            title="Order History"
+            columns={["Supplier", "Timestamp", "Actual Total", "Edit"]}
+            data={orders.map((order) => [
+              order.supplierName,
+              order.timestamp.toLocaleString(),
+              order.actualTotal,
+              <button
+                onClick={() => Router.push(`/reports/order/edit/${order.id}`)}
+              >
+                Edit
+              </button>,
+            ])}
+          />
         </main>
       </div>
     </Layout>

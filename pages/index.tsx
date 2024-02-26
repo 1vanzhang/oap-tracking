@@ -15,12 +15,56 @@ import {
 
 import DashboardAction from "../components/DashboardAction";
 import { Prisma } from "@prisma/client";
+import { getCurrentStock } from "../utils/stock.utils";
+import DataTable from "../components/DataTable";
+import moment from "moment";
 
 export const getStaticProps: GetStaticProps = async () => {
   const latestCapacityReport = await prisma.capacityReport.findFirst({
     orderBy: {
       timestamp: "desc",
     },
+  });
+  const itemsWithHistory = await prisma.item.findMany({
+    include: {
+      units: true,
+      suppliers: {
+        include: {
+          suppliedUnit: true,
+          itemOrder: {
+            include: {
+              order: true,
+            },
+          },
+        },
+      },
+      checkouts: {
+        include: {
+          unit: true,
+        },
+      },
+      itemStocks: {
+        include: {
+          unit: true,
+        },
+      },
+    },
+  });
+  const currentStock = itemsWithHistory.map((item) => {
+    const amountCheckedOutWithinLastMonth = item.checkouts
+      .filter((checkout) => {
+        return moment(checkout.timestamp).isAfter(
+          moment().subtract(1, "month")
+        );
+      })
+      .reduce((acc, checkout) => {
+        return acc + checkout.quantity * (checkout.unit?.ratioToStandard ?? 1);
+      }, 0);
+    return {
+      amount: getCurrentStock(item),
+      item: item,
+      amountCheckedOutWithinLastMonth,
+    };
   });
   const lastItemCheckout = await prisma.itemCheckout.findFirst({
     include: {
@@ -32,7 +76,7 @@ export const getStaticProps: GetStaticProps = async () => {
     },
   });
   return {
-    props: { latestCapacityReport, lastItemCheckout },
+    props: { latestCapacityReport, lastItemCheckout, currentStock },
     revalidate: 5,
   };
 };
@@ -45,6 +89,35 @@ type Props = {
       unit: true;
     };
   }>;
+  currentStock: {
+    amount: number;
+    amountCheckedOutWithinLastMonth: number;
+    item: Prisma.ItemGetPayload<{
+      include: {
+        units: true;
+        suppliers: {
+          include: {
+            suppliedUnit: true;
+            itemOrder: {
+              include: {
+                order: true;
+              };
+            };
+          };
+        };
+        checkouts: {
+          include: {
+            unit: true;
+          };
+        };
+        itemStocks: {
+          include: {
+            unit: true;
+          };
+        };
+      };
+    }>;
+  }[];
 };
 const Tracking: React.FC<Props> = (props) => {
   return (
@@ -80,18 +153,49 @@ const Tracking: React.FC<Props> = (props) => {
             <DashboardAction action="View Stock" href="/stock" />
           </div>
           <CapacityReport capacityReport={props.latestCapacityReport} />
-          <div>
-            {props.lastItemCheckout && (
-              <div>
-                <h2>Last Item Checkout</h2>
-                <p>
-                  Timestamp: {props.lastItemCheckout.timestamp.toISOString()}
-                </p>
-                <p>Quantity: {props.lastItemCheckout.quantity}</p>
-                <p>Unit Name: {props.lastItemCheckout.unit.name}</p>
-              </div>
-            )}
-          </div>
+          <DataTable
+            title="Current Stock"
+            pagination={false}
+            columns={[
+              "Item",
+              "Quantity",
+              "Unit",
+              "Checked Out Within Last Month",
+            ]}
+            data={props.currentStock.map((stock) => {
+              let percentage =
+                (stock.amountCheckedOutWithinLastMonth /
+                  (stock.amountCheckedOutWithinLastMonth + stock.amount)) *
+                100;
+              if (isNaN(percentage)) {
+                percentage = 100;
+              }
+              if (percentage === Infinity) {
+                percentage = 100;
+              }
+              let color = "bg-red-200";
+              if (percentage >= 100) {
+                color = "bg-red-200";
+              } else if (percentage < 25) {
+                color = "bg-green-200";
+              } else if (percentage < 50) {
+                color = "bg-yellow-200";
+              } else {
+                color = "bg-orange-200";
+              }
+              return [
+                stock.item.name,
+                <div className={`rounded ${color}`}>{stock.amount}</div>,
+                stock.item.standardUnit,
+                stock.amountCheckedOutWithinLastMonth +
+                  " " +
+                  (stock.amount == 0 ||
+                  stock.amountCheckedOutWithinLastMonth == 0
+                    ? ""
+                    : `(${percentage.toFixed(2)}%)`),
+              ];
+            })}
+          />
         </main>
       </div>
     </Layout>

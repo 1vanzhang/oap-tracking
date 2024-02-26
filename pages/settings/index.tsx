@@ -3,12 +3,12 @@ import Layout from "../../components/Layout";
 import EventsTable from "./EventsTable";
 import { GetStaticProps } from "next";
 import prisma from "../../lib/prisma";
-import { Event } from "./EventsTable";
 import Router from "next/router";
 import SuppliersTable, { Supplier } from "./SuppliersTable";
-import ItemsTable, { Item } from "./ItemsTable";
-import AuthorizedUsers, { AuthorizedUser } from "./AuthorizedUsers";
-import ProductssTable, { Product } from "./ProductsTable";
+import ItemsTable from "./ItemsTable";
+import AuthorizedUsers from "./AuthorizedUsers";
+import ProductssTable from "./ProductsTable";
+import { AuthorizedUser, Prisma, Product, Event } from "@prisma/client";
 export const getStaticProps: GetStaticProps = async () => {
   const events = await prisma.event.findMany();
   const authorizedUsers = await prisma.authorizedUser.findMany();
@@ -49,9 +49,32 @@ export const getStaticProps: GetStaticProps = async () => {
 type Props = {
   events: Event[];
   suppliers: Supplier[];
-  items: Item[];
+  items: Prisma.ItemGetPayload<{
+    include: {
+      suppliers: {
+        include: {
+          suppliedUnit: true;
+          supplier: true;
+        };
+      };
+      units: true;
+    };
+  }>[];
   authorizedUsers: AuthorizedUser[];
-  products: Product[];
+  products: Prisma.ProductGetPayload<{
+    include: {
+      components: {
+        include: {
+          options: {
+            include: {
+              item: true;
+              unit: true;
+            };
+          };
+        };
+      };
+    };
+  }>[];
 };
 
 export default function Settings({

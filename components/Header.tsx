@@ -38,8 +38,24 @@ const Header: React.FC = () => {
   return (
     <nav className="p-3 bg-gray-300 mb-2">
       <div className="flex gap-2">
-        <Link href="/">Dashboard</Link>
-        <Link href="/settings">Settings</Link>
+        <Link className="underline hover:text-gray-500" href="/">
+          Dashboard
+        </Link>
+        <Link
+          className="underline hover:text-gray-500"
+          href="/reports/capacity"
+        >
+          Report Capacity
+        </Link>
+        <Link
+          className="underline hover:text-gray-500"
+          href="/reports/checkout"
+        >
+          Checkout Item
+        </Link>
+        <Link className="underline hover:text-gray-500" href="/settings">
+          Settings
+        </Link>
       </div>
 
       {/* <div style={{ marginLeft: "auto" }}>{right}</div> */}

@@ -33,6 +33,7 @@ type StockHistory = {
 
 export const getCurrentStock = (item: ItemWithHistory): number => {
   const stockHistory = getStockHistory(item);
+  if (stockHistory.length === 0) return 0;
   return stockHistory[stockHistory.length - 1].quantity;
 };
 
@@ -42,7 +43,7 @@ export const getStockHistory = (item: ItemWithHistory): StockHistory[] => {
     history.push({
       type: "checkout",
       timestamp: checkout.timestamp,
-      quantity: checkout.quantity * (checkout.unit.ratioToStandard ?? 1),
+      quantity: checkout.quantity * (checkout.unit?.ratioToStandard ?? 1),
     });
   });
   item.suppliers.forEach((supplier) => {
@@ -58,14 +59,14 @@ export const getStockHistory = (item: ItemWithHistory): StockHistory[] => {
     history.push({
       type: "stock",
       timestamp: stock.timestamp,
-      quantity: stock.quantity * (stock.unit.ratioToStandard ?? 1),
+      quantity: stock.quantity * (stock.unit?.ratioToStandard ?? 1),
     });
   });
 
   const sortedHistory = history.sort(
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
-  const stockHistory = [];
+  const stockHistory: StockHistory[] = [];
   let stock = 0;
   sortedHistory.forEach((event) => {
     switch (event.type) {
@@ -81,7 +82,7 @@ export const getStockHistory = (item: ItemWithHistory): StockHistory[] => {
     }
     stockHistory.push({
       timestamp: event.timestamp,
-      stock,
+      quantity: stock,
     });
   });
   return stockHistory;

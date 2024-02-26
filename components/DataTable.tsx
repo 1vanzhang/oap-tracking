@@ -5,6 +5,7 @@ type Props = {
   columns: string[];
   data: ReactNode[][];
   entriesPerPage?: number;
+  pagination?: boolean;
 };
 
 export default function DataTable({
@@ -12,11 +13,13 @@ export default function DataTable({
   columns,
   data,
   entriesPerPage = 10,
+  pagination = true,
 }: Props) {
   const [currentPage, setCurrentPage] = React.useState(1);
-  const totalPages = Math.ceil(data.length / entriesPerPage);
-  const indexOfLastRow = currentPage * entriesPerPage;
-  const indexOfFirstRow = indexOfLastRow - entriesPerPage;
+  const actualEntriesPerPage = pagination ? entriesPerPage || 10 : data.length;
+  const totalPages = Math.ceil(data.length / actualEntriesPerPage);
+  const indexOfLastRow = currentPage * actualEntriesPerPage;
+  const indexOfFirstRow = indexOfLastRow - actualEntriesPerPage;
   const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
 
   const handlePageChange = (pageNumber: number) => {

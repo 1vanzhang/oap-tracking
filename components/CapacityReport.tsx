@@ -12,13 +12,14 @@ const CapacityReport: React.FC<{ capacityReport?: CapacityReportProps }> = ({
   capacityReport,
 }) => {
   return (
-    <div>
+    <div className="w-fit mx-auto">
+      <h2>Latest Capacity Report</h2>
       {capacityReport ? (
-        <h2>{`${moment(capacityReport.timestamp).fromNow()}: ${
-          capacityReport.numPeople
-        }`}</h2>
+        <div>{`${capacityReport.numPeople} people (${moment(
+          capacityReport.timestamp
+        ).fromNow()})`}</div>
       ) : (
-        <h2>No capacity report yet</h2>
+        <div>No capacity report yet</div>
       )}
     </div>
   );
