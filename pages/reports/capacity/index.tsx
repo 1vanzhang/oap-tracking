@@ -12,16 +12,10 @@ import TimeGraph from "../../../components/TimeGraph";
 import { CapacityReport } from "@prisma/client";
 
 type Props = {
-  todayReports: CapacityReport[];
   allReports: CapacityReport[];
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const todayReports = await prisma.capacityReport.findMany({
-    orderBy: {
-      timestamp: "asc",
-    },
-  });
   const allReports = await prisma.capacityReport.findMany({
     orderBy: {
       timestamp: "asc",
@@ -29,12 +23,12 @@ export const getStaticProps: GetStaticProps = async () => {
   });
 
   return {
-    props: { todayReports, allReports },
+    props: { allReports },
     revalidate: 1,
   };
 };
 
-export default function ReportCapacity({ todayReports, allReports }: Props) {
+export default function ReportCapacity({ allReports }: Props) {
   const [numPeople, setNumPeople] = React.useState<number | "">("");
   const [timestamp, setTimestamp] = React.useState<string>(
     moment().toISOString()
