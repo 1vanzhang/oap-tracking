@@ -1,4 +1,3 @@
-"use client";
 import { Event } from "@prisma/client";
 import moment from "moment";
 import React, { useMemo } from "react";
@@ -82,6 +81,13 @@ export default function TimeGraph<T extends TimeData>({
         return moment(report.timestamp).isBefore(
           moment(startTime).startOf("day")
         );
+      })
+      .pop();
+
+    const firstOneAfterEnd = data
+      .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
+      .filter((report) => {
+        return moment(report.timestamp).isAfter(moment(endTime).endOf("day"));
       })[0];
     if (lastOneBeforeStart) {
       newData.unshift({
@@ -90,7 +96,7 @@ export default function TimeGraph<T extends TimeData>({
       } as T & {
         timestamp: number;
       });
-    } else if (data.length > 0) {
+    } else if (newData.length > 0) {
       newData.unshift({
         timestamp: moment(startTime).startOf("D").valueOf(),
         [plotField]: newData[0][plotField],
@@ -98,12 +104,21 @@ export default function TimeGraph<T extends TimeData>({
         timestamp: number;
       });
     }
-    newData.push({
-      timestamp: moment(endTime).endOf("D").valueOf(),
-      [plotField]: newData[newData.length - 1][plotField],
-    } as T & {
-      timestamp: number;
-    });
+    if (newData.length > 0) {
+      newData.push({
+        timestamp: moment(endTime).endOf("D").valueOf(),
+        [plotField]: newData[newData.length - 1][plotField],
+      } as T & {
+        timestamp: number;
+      });
+    } else if (firstOneAfterEnd) {
+      newData.push({
+        timestamp: moment(endTime).endOf("D").valueOf(),
+        [plotField]: firstOneAfterEnd[plotField],
+      } as T & {
+        timestamp: number;
+      });
+    }
     return newData;
   }, [data, startTime, endTime]);
 
