@@ -120,7 +120,7 @@ export default function Order({ suppliers, orders }: Props) {
       );
       total += item?.pricePerUnit * (orderItem.quantity || 0);
     });
-    setActualTotal(total);
+    setActualTotal(Math.round(total * 100) / 100);
   }, [order]);
 
   useEffect(() => {
@@ -276,7 +276,7 @@ export default function Order({ suppliers, orders }: Props) {
                         body: JSON.stringify({
                           order,
                           supplierName: selectedSupplier.name,
-                          timestamp,
+                          timestamp: new Date(timestamp),
                           actualTotal,
                         }),
                       });

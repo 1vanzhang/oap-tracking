@@ -92,8 +92,10 @@ export default function Units({
                 value={unit.name}
                 placeholder="Name"
                 onChange={(e) => {
-                  const newUnits = [...units];
-                  newUnits[index].name = e.target.value;
+                  const newUnits = units.map((unit, i) => ({
+                    ...unit,
+                    name: i == index ? e.target.value : unit.name,
+                  }));
                   setUnits(newUnits);
                 }}
               />
@@ -103,14 +105,17 @@ export default function Units({
                 type="number"
                 value={unit.ratioToStandard}
                 onChange={(e) => {
-                  const newUnits = [...units];
-                  newUnits[index].ratioToStandard =
-                    e.target.value.length == 0
-                      ? ""
-                      : parseFloat(e.target.value);
+                  const newUnits = units.map((unit, i) => ({
+                    ...unit,
+                    ratioToStandard:
+                      i == index
+                        ? e.target.valueAsNumber
+                        : unit.ratioToStandard,
+                  }));
                   setUnits(newUnits);
                 }}
               />
+
               <button
                 disabled={
                   unit.name == currentUnits[index].name &&

@@ -3,17 +3,9 @@ import Layout from "../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../lib/prisma";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import { getStockHistory } from "../../utils/stock.utils";
+import TimeGraph from "../../components/TimeGraph";
+import { Event } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
@@ -41,6 +33,7 @@ export const getStaticProps: GetStaticProps = async () => {
       },
     },
   });
+  const events = await prisma.event.findMany();
   const formattedItems = items.map((item) => {
     const history = getStockHistory(item);
     return {
@@ -51,7 +44,7 @@ export const getStaticProps: GetStaticProps = async () => {
     };
   });
   return {
-    props: { items: formattedItems },
+    props: { items: formattedItems, events },
     revalidate: 5,
   };
 };
@@ -68,9 +61,10 @@ type FormattedItem = {
 
 type Props = {
   items: FormattedItem[];
+  events: Event[];
 };
 
-export default function Stock({ items }: Props) {
+export default function Stock({ items, events }: Props) {
   const [selectedItem, setSelectedItem] = React.useState(0);
 
   return (
@@ -93,34 +87,14 @@ export default function Stock({ items }: Props) {
               <h2>
                 {items[selectedItem].name} ({items[selectedItem].standardUnit})
               </h2>
-              <ResponsiveContainer width={400} height={250}>
-                <LineChart
-                  data={items[selectedItem].history.map((h) => ({
-                    ...h,
-                    timestamp: h.timestamp.getTime(),
-                  }))}
-                  margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-                >
-                  <XAxis
-                    dataKey="timestamp"
-                    type="number"
-                    domain={["dataMin", "dataMax"]}
-                    tickFormatter={(unixTime) =>
-                      new Date(unixTime).toLocaleDateString()
-                    }
-                  />
-                  <YAxis dataKey="stock" />
-                  <CartesianGrid stroke="#f5f5f5" />
-                  <Tooltip
-                    labelFormatter={(unixTime) =>
-                      new Date(unixTime).toLocaleDateString()
-                    }
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="stock" stroke="#ff7300" />
-                  <CartesianGrid stroke="#000" />
-                </LineChart>
-              </ResponsiveContainer>
+              <TimeGraph
+                events={events}
+                data={items[selectedItem].history.map((h) => ({
+                  stock: h.quantity,
+                  timestamp: h.timestamp,
+                }))}
+                plotField="stock"
+              />
             </div>
           </div>
         </main>

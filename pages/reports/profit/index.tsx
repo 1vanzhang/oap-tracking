@@ -71,8 +71,8 @@ export default function Profit({ products }: Props) {
                 <th>Product</th>
                 <th>Most Expensive Variation</th>
                 <th>Cost</th>
-                <th>Price</th>
-                <th>Profit After Tax</th>
+                <th>Sell For</th>
+                <th>Sell For After Tax</th>
                 <th>Margin</th>
               </tr>
             </thead>

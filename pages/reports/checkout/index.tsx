@@ -82,7 +82,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
       body: JSON.stringify({
         itemId: selectedItemId,
         quantity: quantity,
-        unitId: selectedUnitId.length > 0 ? selectedUnitId : null,
+        unitId: selectedUnitId?.length > 0 ? selectedUnitId : null,
         timestamp,
       }),
     });
