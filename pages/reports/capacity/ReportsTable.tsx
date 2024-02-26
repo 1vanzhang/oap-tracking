@@ -32,14 +32,16 @@ export default function ReportsTable({ reports }: Props) {
             "Preventing entry",
             "Delete",
           ]}
-          data={reports.map((report) => [
-            moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
-            report.numPeople,
-            report.preventingEntry ? "Yes" : "No",
-            <DeleteButton onClick={() => deleteReport(report.id)}>
-              Delete
-            </DeleteButton>,
-          ])}
+          data={
+            reports?.map((report) => [
+              moment(report.timestamp).format("YYYY-MM-DD hh:mm a"),
+              report.numPeople,
+              report.preventingEntry ? "Yes" : "No",
+              <DeleteButton onClick={() => deleteReport(report.id)}>
+                Delete
+              </DeleteButton>,
+            ]) ?? []
+          }
         />
       }
     </div>
