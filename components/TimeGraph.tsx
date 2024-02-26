@@ -84,11 +84,6 @@ export default function TimeGraph<T extends TimeData>({
       })
       .pop();
 
-    const firstOneAfterEnd = data
-      .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
-      .filter((report) => {
-        return moment(report.timestamp).isAfter(moment(endTime).endOf("day"));
-      })[0];
     if (lastOneBeforeStart) {
       newData.unshift({
         timestamp: moment(startTime).startOf("D").valueOf(),
@@ -111,10 +106,10 @@ export default function TimeGraph<T extends TimeData>({
       } as T & {
         timestamp: number;
       });
-    } else if (firstOneAfterEnd) {
+    } else if (lastOneBeforeStart) {
       newData.push({
         timestamp: moment(endTime).endOf("D").valueOf(),
-        [plotField]: firstOneAfterEnd[plotField],
+        [plotField]: lastOneBeforeStart[plotField],
       } as T & {
         timestamp: number;
       });
