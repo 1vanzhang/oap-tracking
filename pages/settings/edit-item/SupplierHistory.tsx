@@ -1,12 +1,16 @@
 import React from "react";
-import { ItemSupplier, ItemUnit } from "./[id]";
+import { Prisma, ItemUnit } from "@prisma/client";
 import { Supplier } from "../SuppliersTable";
 import moment from "moment";
 import Router from "next/router";
 
 type Props = {
   supplierOptions: Supplier[];
-  suppliers: ItemSupplier[];
+  suppliers: Prisma.ItemSupplierGetPayload<{
+    include: {
+      suppliedUnit: true;
+    };
+  }>[];
   units: ItemUnit[];
   itemId: string;
 };

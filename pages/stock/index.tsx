@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import Layout from "../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../lib/prisma";
-import { Prisma } from "@prisma/client";
 
 import {
   LineChart,
