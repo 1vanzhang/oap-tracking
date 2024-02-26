@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 type Props = {
   title: string;
   columns: string[];
-  data: ReactNode[][];
+  data?: ReactNode[][];
   entriesPerPage?: number;
   pagination?: boolean;
 };
@@ -11,7 +11,7 @@ type Props = {
 export default function DataTable({
   title,
   columns,
-  data,
+  data = [],
   entriesPerPage = 10,
   pagination = true,
 }: Props) {
