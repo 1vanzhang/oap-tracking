@@ -151,6 +151,7 @@ const Tracking: React.FC<Props> = (props) => {
           <div className="flex flex-wrap gap-2 items-center justify-center">
             <DashboardAction action="Profits" href="/reports/profit" />
             <DashboardAction action="View Stock" href="/stock" />
+            <DashboardAction action="View Consumption" href="/consumption" />
           </div>
           <CapacityReport capacityReport={props.latestCapacityReport} />
           <DataTable

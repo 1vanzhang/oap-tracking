@@ -21,12 +21,14 @@ type Props<T extends TimeData> = {
   data: T[];
   plotField: keyof T & string;
   defaultStartTime?: string;
+  zeroFill?: boolean;
 };
 
 export default function TimeGraph<T extends TimeData>({
   data,
   plotField,
   defaultStartTime,
+  zeroFill,
   events,
 }: Props<T>) {
   const [startTime, setStartTime] = React.useState<string | null>(
@@ -84,7 +86,14 @@ export default function TimeGraph<T extends TimeData>({
       })
       .pop();
 
-    if (lastOneBeforeStart) {
+    if (zeroFill) {
+      newData.unshift({
+        timestamp: moment(startTime).startOf("D").valueOf(),
+        [plotField]: 0,
+      } as T & {
+        timestamp: number;
+      });
+    } else if (lastOneBeforeStart) {
       newData.unshift({
         timestamp: moment(startTime).startOf("D").valueOf(),
         [plotField]: lastOneBeforeStart[plotField],
@@ -99,7 +108,14 @@ export default function TimeGraph<T extends TimeData>({
         timestamp: number;
       });
     }
-    if (newData.length > 0) {
+    if (zeroFill && newData.length == 0) {
+      newData.push({
+        timestamp: moment(startTime).startOf("D").valueOf(),
+        [plotField]: 0,
+      } as T & {
+        timestamp: number;
+      });
+    } else if (newData.length > 0) {
       newData.push({
         timestamp: moment(endTime).endOf("D").valueOf(),
         [plotField]: newData[newData.length - 1][plotField],

@@ -71,7 +71,7 @@ export default function EditOrder({ order }: Props) {
               <tr>
                 <th>Item</th>
                 <th>Quantity</th>
-                <th>Unit</th>
+                <th>Standard Unit Quantity</th>
                 <th>Price Per Unit</th>
                 <th>Price</th>
               </tr>
@@ -80,8 +80,14 @@ export default function EditOrder({ order }: Props) {
               {order.items.map((orderItem) => (
                 <tr key={orderItem.id}>
                   <td>{orderItem.item.item.name}</td>
-                  <td>{orderItem.quantity}</td>
-                  <td>{orderItem.item.suppliedUnit.name}</td>
+                  <td>
+                    {orderItem.quantity} {orderItem.item.suppliedUnit.name}
+                  </td>
+                  <td>
+                    {orderItem.quantity *
+                      orderItem.item.suppliedUnit.ratioToStandard}{" "}
+                    {orderItem.item.item.standardUnit}
+                  </td>
                   <td>${orderItem.item.pricePerUnit.toFixed(2)}</td>
                   <td>
                     $

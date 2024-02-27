@@ -26,6 +26,16 @@ type ItemWithHistory = Prisma.ItemGetPayload<{
   };
 }>;
 
+type ItemWithCheckouts = Prisma.ItemGetPayload<{
+  include: {
+    checkouts: {
+      include: {
+        unit: true;
+      };
+    };
+  };
+}>;
+
 type StockHistory = {
   timestamp: Date;
   quantity: number;
@@ -35,6 +45,27 @@ export const getCurrentStock = (item: ItemWithHistory): number => {
   const stockHistory = getStockHistory(item);
   if (stockHistory.length === 0) return 0;
   return stockHistory[stockHistory.length - 1].quantity;
+};
+
+export const getConsumption = (item: ItemWithCheckouts): StockHistory[] => {
+  const history = [];
+  item.checkouts.forEach((checkout) => {
+    history.push({
+      timestamp: checkout.timestamp,
+      quantity: checkout.quantity * (checkout.unit?.ratioToStandard ?? 1),
+    });
+  });
+  history.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const consumption: StockHistory[] = [];
+  let stock = 0;
+  history.forEach((event) => {
+    stock += event.quantity;
+    consumption.push({
+      timestamp: event.timestamp,
+      quantity: stock,
+    });
+  });
+  return consumption;
 };
 
 export const getStockHistory = (item: ItemWithHistory): StockHistory[] => {
