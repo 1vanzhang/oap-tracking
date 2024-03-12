@@ -1,11 +1,14 @@
+import { Supplier } from "@prisma/client";
 import React from "react";
 
-export type Supplier = {
-  name: string;
+export type SupplierWithCount = Supplier & {
+  _count: {
+    itemSupplier: number;
+    orders: number;
+  };
 };
-
 type Props = {
-  suppliers: Supplier[];
+  suppliers: SupplierWithCount[];
 };
 
 export default function SuppliersTable({ suppliers }: Props) {
@@ -49,6 +52,10 @@ export default function SuppliersTable({ suppliers }: Props) {
               <td>{supplier.name}</td>
               <td>
                 <button
+                  disabled={
+                    supplier._count.itemSupplier > 0 ||
+                    supplier._count.orders > 0
+                  }
                   onClick={() => {
                     fetch("/api/supplier", {
                       method: "DELETE",

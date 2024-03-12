@@ -54,6 +54,14 @@ export default function TimeGraph<T extends TimeData>({
   }, [startTime, endTime]);
 
   const formattedData = useMemo(() => {
+    const lastOneBeforeStart = data
+      .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
+      .filter((report) => {
+        return moment(report.timestamp).isBefore(
+          moment(startTime).startOf("day")
+        );
+      })
+      .pop();
     const newData = data
       .map((report) => {
         return {
@@ -76,15 +84,19 @@ export default function TimeGraph<T extends TimeData>({
           return false;
         }
         return true;
-      });
-    const lastOneBeforeStart = data
-      .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
-      .filter((report) => {
-        return moment(report.timestamp).isBefore(
-          moment(startTime).startOf("day")
-        );
       })
-      .pop();
+      .map((report) => {
+        if (lastOneBeforeStart && zeroFill) {
+          return {
+            ...report,
+            [plotField]:
+              (report[plotField] as number) -
+              (lastOneBeforeStart[plotField] as number),
+          };
+        } else {
+          return report;
+        }
+      });
 
     if (zeroFill) {
       newData.unshift({

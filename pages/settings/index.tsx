@@ -4,7 +4,7 @@ import EventsTable from "./EventsTable";
 import { GetStaticProps } from "next";
 import prisma from "../../lib/prisma";
 import Router from "next/router";
-import SuppliersTable, { Supplier } from "./SuppliersTable";
+import SuppliersTable, { SupplierWithCount } from "./SuppliersTable";
 import ItemsTable from "./ItemsTable";
 import AuthorizedUsers from "./AuthorizedUsers";
 import ProductssTable from "./ProductsTable";
@@ -37,9 +37,18 @@ export const getStaticProps: GetStaticProps = async () => {
       },
     },
   });
-  const suppliers = await prisma.supplier.findMany();
-  console.log("events", events);
-  console.log("items", items);
+  const suppliers = await prisma.supplier.findMany({
+    select: {
+      name: true,
+      _count: {
+        select: {
+          itemSupplier: true,
+          orders: true,
+        },
+      },
+    },
+  });
+  console.log("suppliers", suppliers);
   return {
     props: { events, suppliers, items, authorizedUsers, products },
     revalidate: 5,
@@ -48,7 +57,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
 type Props = {
   events: Event[];
-  suppliers: Supplier[];
+  suppliers: SupplierWithCount[];
   items: Prisma.ItemGetPayload<{
     include: {
       suppliers: {

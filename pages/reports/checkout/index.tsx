@@ -10,6 +10,7 @@ import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector
 import DeleteButton from "../../../components/DeleteButton";
 import DataTable from "../../../components/DataTable";
 import { Prisma } from "@prisma/client";
+import useGreedyServerArray from "../../../hooks/useGreedyServerArray";
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
     include: {
@@ -35,25 +36,29 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
+type CheckoutItem = Prisma.ItemCheckoutGetPayload<{
+  include: {
+    item: {
+      include: {
+        units: true;
+      };
+    };
+    unit: true;
+  };
+}>;
+
 type Props = {
   items: Prisma.ItemGetPayload<{
     include: {
       units: true;
     };
   }>[];
-  checkoutHistory: Prisma.ItemCheckoutGetPayload<{
-    include: {
-      item: {
-        include: {
-          units: true;
-        };
-      };
-      unit: true;
-    };
-  }>[];
+  checkoutHistory: CheckoutItem[];
 };
 
 export default function Checkout({ items, checkoutHistory }: Props) {
+  const [greedyCheckoutHistory, addItem, removeItem, updateItem] =
+    useGreedyServerArray(checkoutHistory);
   const [selectedItemId, setSelectedItemId] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
   const [selectedUnitId, setSelectedUnitId] = React.useState<string>("");
@@ -61,7 +66,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
     new Date().toISOString()
   );
   useEffect(() => {
-    const mostRecentCheckout = checkoutHistory.find(
+    const mostRecentCheckout = greedyCheckoutHistory.find(
       (checkout) => checkout.itemId === selectedItemId
     );
     if (mostRecentCheckout) {
@@ -69,14 +74,28 @@ export default function Checkout({ items, checkoutHistory }: Props) {
     } else {
       setSelectedUnitId("");
     }
-  }, [checkoutHistory, selectedItemId]);
+  }, [greedyCheckoutHistory, selectedItemId]);
   const { data: session, status } = useSession();
 
   const userId = session?.user?.email;
 
   const submit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    await fetch("/api/checkout", {
+    const fakeNewCheckout: CheckoutItem = {
+      id: Math.random().toString(36).substring(7),
+      item: items.find((item) => item.id === selectedItemId),
+      itemId: selectedItemId,
+      quantity,
+      unitId: selectedUnitId,
+      unit: items
+        .find((item) => item.id === selectedItemId)
+        ?.units.find((unit) => unit.id === selectedUnitId),
+      timestamp: new Date(timestamp),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    addItem(fakeNewCheckout);
+    fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -85,8 +104,22 @@ export default function Checkout({ items, checkoutHistory }: Props) {
         unitId: selectedUnitId?.length > 0 ? selectedUnitId : null,
         timestamp,
       }),
-    });
-    Router.reload();
+    })
+      .then((newItem) => {
+        newItem.json().then((newItem) => {
+          updateItem(0, {
+            ...fakeNewCheckout,
+            id: newItem.id,
+          });
+        });
+      })
+      .catch(() => {
+        removeItem(
+          greedyCheckoutHistory.findIndex(
+            (checkout) => checkout.id === fakeNewCheckout.id
+          )
+        );
+      });
   };
   return (
     <Layout>
@@ -107,7 +140,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
           <DataTable
             title="Checkout History"
             columns={["Item", "Quantity", "Timestamp", "Delete"]}
-            data={checkoutHistory.map((checkout) => [
+            data={greedyCheckoutHistory.map((checkout) => [
               checkout.item.name,
               `${checkout.quantity} ${
                 checkout.unit?.name || checkout.item.standardUnit
@@ -115,12 +148,16 @@ export default function Checkout({ items, checkoutHistory }: Props) {
               new Date(checkout.timestamp).toLocaleString(),
               <DeleteButton
                 onClick={async () => {
+                  removeItem(
+                    greedyCheckoutHistory.findIndex((c) => c.id === checkout.id)
+                  );
                   await fetch("/api/checkout", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id: checkout.id }),
+                  }).catch(() => {
+                    Router.reload();
                   });
-                  Router.reload();
                 }}
               >
                 Delete
