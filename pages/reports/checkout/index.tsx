@@ -82,7 +82,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
   const submit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     const fakeNewCheckout: CheckoutItem = {
-      id: Math.random().toString(36).substring(7),
+      id: Math.random().toString(36).substring(5),
       item: items.find((item) => item.id === selectedItemId),
       itemId: selectedItemId,
       quantity,
@@ -94,6 +94,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+    setSelectedItemId("");
     addItem(fakeNewCheckout);
     fetch("/api/checkout", {
       method: "POST",
@@ -147,6 +148,7 @@ export default function Checkout({ items, checkoutHistory }: Props) {
               }`,
               new Date(checkout.timestamp).toLocaleString(),
               <DeleteButton
+                disabled={checkout.id.length < 10}
                 onClick={async () => {
                   removeItem(
                     greedyCheckoutHistory.findIndex((c) => c.id === checkout.id)
