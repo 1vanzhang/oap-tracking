@@ -1,6 +1,6 @@
 import React from "react";
-import { Prisma, ItemUnit } from "@prisma/client";
-import { Supplier } from "../SuppliersTable";
+import { Prisma, ItemUnit, Supplier } from "@prisma/client";
+
 import moment from "moment";
 import Router from "next/router";
 
