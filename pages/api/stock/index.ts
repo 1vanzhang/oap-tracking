@@ -3,7 +3,8 @@ import prisma from "../../../lib/prisma";
 
 const handleReportStock = async (req, res) => {
   const { itemId, quantity, unitId, timestamp } = req.body;
-  await prisma.itemStock.create({
+
+  const newCheckout = await prisma.itemStock.create({
     data: {
       itemId: itemId,
       quantity: quantity,
@@ -11,7 +12,7 @@ const handleReportStock = async (req, res) => {
       unitId: unitId,
     },
   });
-  res.status(200).json({ message: "Checkout successful" });
+  res.status(200).json(newCheckout);
 };
 const handleDeleteStock = async (req, res) => {
   const { id } = req.body;

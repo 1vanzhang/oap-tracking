@@ -1,14 +1,10 @@
 import React from "react";
-import Layout from "../../../components/Layout";
 import { GetStaticProps } from "next";
 import prisma from "../../../lib/prisma";
 import DateTimePicker from "../../../components/DateTimePicker";
-import Router from "next/router";
-import Form from "../../../components/Form";
 import ItemAndQuantitySelector from "../../../components/ItemAndQuantitySelector";
-import DeleteButton from "../../../components/DeleteButton";
-import DataTable from "../../../components/DataTable";
 import { Prisma } from "@prisma/client";
+import FormAndTable from "../../../components/FormAndTable";
 
 export const getStaticProps: GetStaticProps = async () => {
   const items = await prisma.item.findMany({
@@ -35,22 +31,24 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
+type StockHistoryRecord = Prisma.ItemStockGetPayload<{
+  include: {
+    item: {
+      include: {
+        units: true;
+      };
+    };
+    unit: true;
+  };
+}>;
+
 type Props = {
   items: Prisma.ItemGetPayload<{
     include: {
       units: true;
     };
   }>[];
-  stockHistory: Prisma.ItemStockGetPayload<{
-    include: {
-      item: {
-        include: {
-          units: true;
-        };
-      };
-      unit: true;
-    };
-  }>[];
+  stockHistory: StockHistoryRecord[];
 };
 
 export default function ReportStock({ items, stockHistory }: Props) {
@@ -60,55 +58,64 @@ export default function ReportStock({ items, stockHistory }: Props) {
   const [timestamp, setTimestamp] = React.useState<string>(
     new Date().toISOString()
   );
-  const submit = async () => {
-    const response = await fetch("/api/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId, quantity, unitId, timestamp }),
-    });
-    Router.reload();
-  };
-  return (
-    <Layout>
-      <div className="page">
-        <main>
-          <Form title="Report Stock" onSubmit={submit}>
-            <ItemAndQuantitySelector
-              itemOptions={items}
-              selectedItemId={itemId}
-              selectedUnitId={unitId}
-              quantity={quantity}
-              setSelectedItemId={setItemId}
-              setQuantity={setQuantity}
-              setSelectedUnitId={setUnitId}
-            />
-            <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
-          </Form>
 
-          <DataTable
-            title="Stock History"
-            columns={["Item", "Quantity", "Unit", "Timestamp", "Delete"]}
-            data={stockHistory.map((stock) => [
-              stock.item.name,
-              stock.quantity,
-              stock.unit.name,
-              stock.timestamp.toLocaleString(),
-              <DeleteButton
-                onClick={async () => {
-                  await fetch("/api/stock", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: stock.id }),
-                  });
-                  Router.reload();
-                }}
-              >
-                Delete
-              </DeleteButton>,
-            ])}
-          />
-        </main>
-      </div>
-    </Layout>
+  return (
+    <FormAndTable
+      title="Report Stock"
+      tableTitle="Stock History"
+      history={stockHistory}
+      columns={["Item", "Quantity", "Unit", "Timestamp"]}
+      getRow={(item) => [
+        item.item.name,
+        item.quantity,
+        item.unit?.name ?? item.item.standardUnit,
+        item.timestamp.toLocaleString(),
+      ]}
+      deleteRow={async (id: string) => {
+        await fetch("/api/stock", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+      }}
+      addRow={async () => {
+        const resp = await fetch("/api/stock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            itemId,
+            quantity,
+            unitId: unitId.length > 0 ? unitId : null,
+            timestamp,
+          }),
+        });
+        const newId = (await resp.json()).id as string;
+        return newId;
+      }}
+      getFormItem={() => {
+        const item: Omit<StockHistoryRecord, "id"> = {
+          item: items.find((item) => item.id === itemId),
+          itemId,
+          quantity,
+          unitId,
+          unit: items
+            .find((item) => item.id === itemId)
+            ?.units.find((unit) => unit.id === unitId),
+          timestamp: new Date(timestamp),
+        };
+        return item;
+      }}
+    >
+      <ItemAndQuantitySelector
+        itemOptions={items}
+        selectedItemId={itemId}
+        selectedUnitId={unitId}
+        quantity={quantity}
+        setSelectedItemId={setItemId}
+        setQuantity={setQuantity}
+        setSelectedUnitId={setUnitId}
+      />
+      <DateTimePicker timestamp={timestamp} setTimestamp={setTimestamp} />
+    </FormAndTable>
   );
 }
