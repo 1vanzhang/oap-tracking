@@ -14,6 +14,7 @@ export default function ReportsTable({ deleteReport, reports }: Props) {
         <div>
             {
                 <DataTable
+                    downloadData={reports}
                     title="Capacity Reports"
                     columns={[
                         'Timestamp',
