@@ -43,7 +43,7 @@ export default function DateTimePicker({ timestamp, setTimestamp }: Props) {
                 setLiveTime(now.format('HH:mm:ss'));
                 setTimestamp(now.toISOString());
             };
-
+            if (intervalId) clearInterval(intervalId);
             updateLiveTime(); // Update immediately when switching to live mode
             intervalId = setInterval(updateLiveTime, 1000); // Update every second
         }
