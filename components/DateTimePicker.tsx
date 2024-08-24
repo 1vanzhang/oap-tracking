@@ -25,6 +25,21 @@ export default function DateTimePicker({ timestamp, setTimestamp }: Props) {
     useEffect(() => {
         setTimestamp(moment(`${date} ${time}`).toISOString());
     }, [date, time]);
+
+    useEffect(() => {
+        const updateTimeIfToday = () => {
+            const today = moment().format('YYYY-MM-DD');
+            if (date === today) {
+                const currentTime = moment().format('HH:mm');
+                setTime(currentTime);
+            }
+        };
+
+        const intervalId = setInterval(updateTimeIfToday, 10000); // 10 seconds
+
+        return () => clearInterval(intervalId);
+    }, [date]);
+
     return (
         <div>
             <input
