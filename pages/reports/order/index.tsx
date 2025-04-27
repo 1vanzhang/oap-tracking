@@ -101,7 +101,7 @@ type NewItemOrder = {
     quantity: number;
 };
 
-export default function Order({ suppliers, orders }: Props) {
+export default function MakeOrder({ suppliers, orders }: Props) {
     const [selectedSupplierId, setSelectedSupplierId] =
         React.useState<string>('');
     const selectedSupplier = useMemo(() => {
